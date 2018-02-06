@@ -67,6 +67,7 @@ def Build_Scoring_Matrix(file_1):
     with file as f:
         m = f.read().splitlines()[7::]
 
+    file.close()
     # reformat the matrix
     for x in range(len(m)):
         m[x] = m[x].split()[1::]
