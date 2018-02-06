@@ -95,4 +95,15 @@ def Output_Sequences(sequence_1, sequence_2, score):
 		score: the score of the aligned sequences
 
 	"""
-    pass
+    print "Score: %d" % (score)
+    print sequence_1
+    result = ""
+    for c in range(len(sequence_1)):
+        if sequence_1[c] == sequence_2[c]:
+            result += "|"
+        elif sequence_1[c] == "-" or sequence_2[c] == "-":
+            result += " "
+        else:
+            result += "*"
+    print result
+    print sequence_2
