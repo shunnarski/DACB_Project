@@ -53,6 +53,44 @@ def Build_Scoring_Matrix(file_1):
 		Returns a dictionary of the form BLOSUM_dict[(str, str)] = int
 
 	"""
+    """
+    1. Create list of proteins in matrix in order
+    2. Extract BLOSUM62 values in the matrix into a 2x2 int array
+    3. Assign a tuple to each value in the matrix in a dictionary
+    4. Return the dictionary
+    """
+    # list of proteins used in the BLOSUM62 matrix
+    proteins = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y',
+                'V', 'B', 'Z', 'X', '*']
+
+    file = open(file_1, "r")
+    with file as f:
+        m = f.read().splitlines()[7::]
+
+    # reformat the matrix
+    for x in range(len(m)):
+        m[x] = m[x].split()[1::]
+
+    # dimensions of blosum62 matrix
+    dim = len(proteins)
+
+    # initialize blosum62 matrix
+    blosum_matrix = [[0 for x in range(dim)] for y in range(dim)]
+
+    # set matrix of string values from file into matrix of int values
+    for row in range(dim):
+        for column in range(dim):
+            blosum_matrix[row][column] = int(m[row][column])
+
+    # create dictionary we're returning with appropriate key-value pairs
+    blosum_dict = {}
+    for row in range(dim):
+        for column in range(dim):
+            tup = (proteins[row], proteins[column])
+            val = blosum_matrix[row][column]
+            blosum_dict[tup] = val
+
+    return blosum_dict
 
 
 def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
