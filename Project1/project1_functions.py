@@ -75,20 +75,12 @@ def Build_Scoring_Matrix(file_1):
     # dimensions of blosum62 matrix
     dim = len(proteins)
 
-    # initialize blosum62 matrix
-    blosum_matrix = [[0 for x in range(dim)] for y in range(dim)]
-
-    # set matrix of string values from file into matrix of int values
-    for row in range(dim):
-        for column in range(dim):
-            blosum_matrix[row][column] = int(m[row][column])
-
     # create dictionary we're returning with appropriate key-value pairs
     blosum_dict = {}
     for row in range(dim):
         for column in range(dim):
             tup = (proteins[row], proteins[column])
-            val = blosum_matrix[row][column]
+            val = int(m[row][column])
             blosum_dict[tup] = val
 
     return blosum_dict
