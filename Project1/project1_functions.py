@@ -60,7 +60,7 @@ def Build_Scoring_Matrix(file_1):
     4. Return the dictionary
     """
     # list of proteins used in the BLOSUM62 matrix
-    proteins = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y',
+    aminos = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y',
                 'V', 'B', 'Z', 'X', '*']
 
     file = open(file_1, "r")
@@ -73,13 +73,13 @@ def Build_Scoring_Matrix(file_1):
         m[x] = m[x].split()[1::]
 
     # dimensions of blosum62 matrix
-    dim = len(proteins)
+    dim = len(aminos)
 
     # create dictionary we're returning with appropriate key-value pairs
     blosum_dict = {}
     for row in range(dim):
         for column in range(dim):
-            tup = (proteins[row], proteins[column])
+            tup = (aminos[row], aminos[column])
             val = int(m[row][column])
             blosum_dict[tup] = val
 
@@ -115,7 +115,7 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
         4. Return the matrix
         """
         # initialize matrix size with all zeroes
-        matrix = [[0 for col in range(w)] for row in range(h)]
+        matrix = [[0 for c in range(w)] for r in range(h)]
 
         for i in range(1, h):
             for j in range(1, w):
@@ -171,11 +171,11 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
                 align2 += sequence_2[j - 1]
                 i -= 1  # decrement to move back up the matrix
                 j -= 1
-            elif u > u_l and u > l:
+            elif u > u_l and u >= l:
                 align1 += sequence_1[i - 1]
                 align2 += "*"  # represents a space
                 i -= 1
-            elif l > u_l and l > u:
+            elif l > u_l and l >= u:
                 align1 += "*"
                 align2 += sequence_2[j - 1]
                 j -= 1
@@ -183,15 +183,15 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
         align2 = align2[::-1]
         return align1, align2
 
-    def calculate_alignment_score(align1, align2):
+    def calculate_alignment_score(seq1, seq2):
         """
         Take in the two alignment sequences and use the blosum62 dictionary to determine the score
         of the two sequences. Not entirely sure if the starting position is the score of
         our alignment or not...planning on asking DB.
         """
         score = 0
-        for i in range(len(align1)):
-            score += blosum_dict[(align1[i], align2[i])]
+        for i in range(len(seq1)):
+            score += blosum_dict[(seq1[i], seq2[i])]
         return score
 
     sw_matrix = build_sw_matrix(w, h) # build matrix
@@ -216,7 +216,7 @@ def Needlman_Wunsch(sequence_1, sequence_2, scoring_matrix):
     pass
 
 
-def Output_Sequences(sequence_1, sequence_2, score):
+def Output_Sequences(alignment_1, alignment_2, score):
     """
 	Prints (or writes to a file?) the score and two aligned sequences in the format specifed by the project documentation
 
@@ -226,15 +226,28 @@ def Output_Sequences(sequence_1, sequence_2, score):
 		score: the score of the aligned sequences
 
 	"""
-    print "Score: %d" % (score)
-    print sequence_1
+    """
+    Notes:
+    
+    Append the beginning and end of the local alignment with the remainder of sequence
+    Largest value in the scoring matrix is the score that should be output from the immediate local alignment
+    """
+    # replace gaps in alignment with "-" characters to meet output requirements
+    alignment_1 = alignment_1.replace("*", "-")
+    alignment_2 = alignment_2.replace("*", "-")
+    print
+    print "Smith-Waterman Results:"
+    print
+    print "Score: %d" % score
+    print alignment_1
     result = ""
-    for c in range(len(sequence_1)):
-        if sequence_1[c] == sequence_2[c]:
+    for c in range(len(alignment_1)):
+        if alignment_1[c] == alignment_2[c]:
             result += "|"
-        elif sequence_1[c] == "-" or sequence_2[c] == "-":
+        elif alignment_1[c] == "-" or alignment_2[c] == "-":
             result += " "
         else:
             result += "*"
     print result
-    print sequence_2
+    print alignment_2
+    print
