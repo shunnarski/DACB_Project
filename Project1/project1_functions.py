@@ -239,7 +239,7 @@ def Output_Sequences(alignment_1, alignment_2, score):
     print "Smith-Waterman Results:"
     print
     print "Score: %d" % score
-    print alignment_1
+    # generate the result string in between the two alignments
     result = ""
     for c in range(len(alignment_1)):
         if alignment_1[c] == alignment_2[c]:
@@ -248,6 +248,17 @@ def Output_Sequences(alignment_1, alignment_2, score):
             result += " "
         else:
             result += "*"
-    print result
-    print alignment_2
-    print
+
+    #credit to "satomacoto" at https://stackoverflow.com/questions/9475241/split-string-every-nth-character for the easy
+    # way to split the strings into characters of 80
+    linebreak = 80
+    align1_break = [alignment_1[i:i+linebreak:] for i in range(0, len(alignment_1), linebreak)]
+    align2_break = [alignment_2[i:i+linebreak:] for i in range(0, len(alignment_2), linebreak)]
+    result_break = [result[i:i+linebreak:] for i in range(0, len(result), linebreak)]
+
+    for i in range(len(align1_break)):
+        print align1_break[i]
+        print result_break[i]
+        print align2_break[i]
+        print
+
