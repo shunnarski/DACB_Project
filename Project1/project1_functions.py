@@ -201,7 +201,7 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
     return align1, align2, score    #return alignments and score
 
 
-def Needlman_Wunsch(sequence_1, sequence_2, scoring_matrix):
+def Needleman_Wunsch(sequence_1, sequence_2, scoring_matrix):
     """
 	Needlman-Wunsch algorithm
 
@@ -213,7 +213,7 @@ def Needlman_Wunsch(sequence_1, sequence_2, scoring_matrix):
 	Returns:
 		Returns the two aligned sequences and the score in a tuple of the form (str, str, int)
 	"""
-    pass
+    return "", "", 0
 
 
 def Output_Sequences(alignment_1, alignment_2, score):
@@ -235,8 +235,7 @@ def Output_Sequences(alignment_1, alignment_2, score):
     # replace gaps in alignment with "-" characters to meet output requirements
     alignment_1 = alignment_1.replace("*", "-")
     alignment_2 = alignment_2.replace("*", "-")
-    print
-    print "Smith-Waterman Results:"
+
     print
     print "Score: %d" % score
     # generate the result string in between the two alignments
@@ -249,8 +248,6 @@ def Output_Sequences(alignment_1, alignment_2, score):
         else:
             result += "*"
 
-    #credit to "satomacoto" at https://stackoverflow.com/questions/9475241/split-string-every-nth-character for the easy
-    # way to split the strings into characters of 80
     linebreak = 80
     align1_break = [alignment_1[i:i+linebreak:] for i in range(0, len(alignment_1), linebreak)]
     align2_break = [alignment_2[i:i+linebreak:] for i in range(0, len(alignment_2), linebreak)]
