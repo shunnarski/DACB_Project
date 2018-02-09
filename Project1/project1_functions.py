@@ -151,7 +151,7 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
                 if val > max_score:
                     max_score = val
                     max_pos = (i, j)
-        print "What score should be: %d" % max_score
+        print "Local alignment only score: %d" % max_score
         return max_pos
 
 
@@ -213,31 +213,76 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
                     j -= 1
         align1 = align1[::-1]  # reverse the strings we made from backtracking. This will be our final alignment
         align2 = align2[::-1]
-        return align1, align2
+        result1 = ""
+        result2 = ""
+        front1, front2 = get_front_sequence((i,j))
+        back1, back2 = get_back_sequence(start_pos)
+        result1 += front1
+        result1 += align1
+        result1 += back1
+        result2 += front2
+        result2 += align2
+        result2 += back2
+        return result1, result2
 
-    # def print_matrix(matrix, rows, sequence_1, sequence_2):
-    #     let_row = " "
-    #     let_row += "0"
-    #     let_col = "0"
-    #     let_row += sequence_2
-    #     let_col += sequence_1
-    #     row = ""
-    #     for c in let_row:
-    #         row += c
-    #         row += "    "
-    #
-    #     print row
-    #     for i in range(rows):
-    #         tmp = matrix[i]
-    #         rslt = let_col[i]
-    #         rslt += "    "
-    #         for j in tmp:
-    #
-    #             rslt += str(j)
-    #             rslt += "    "
-    #         print rslt
+    def get_front_sequence(end_of_backtrack_pos):
+        """
+        :param end_of_backtrack_pos: position at the end of the backtrack
+        :return: strings containing the characters before the local alignment (if there are any)
 
+        Starting at the end of backtrack process and going as up-left as we can and then filling the remainder
+        with gaps if we need to either ups or lefts. Continue this until we reach point (0,0) in matrix.
+        Adding each character along the way or gaps.
+        """
 
+        i, j = end_of_backtrack_pos
+        front_1 = ""
+        front_2 = ""
+        while (i,j) != (0,0):
+            if i > 0 and j > 0:
+                front_1 += sequence_1[i-1]
+                front_2 += sequence_2[j-1]
+                i -= 1
+                j -= 1
+            elif i > 0:
+                front_1 += sequence_1[i-1]
+                front_2 += "*"
+                i -= 1
+            elif j > 0:
+                front_1 += "*"
+                front_2 += sequence_2[j - 1]
+                j -= 1
+        return front_1[::-1], front_2[::-1]
+
+    def get_back_sequence(start_pos):
+        """
+        :param start_pos: position where local alignment start
+        :return: strings containing the characters after local alignment (if there are any)
+
+        Starting at the starting position of local alignment (or cell with largest value)
+        and moving down-right until we reach the bottom-right corner of the matrix. Adding each character along the way
+        or gaps.
+        """
+        i, j = start_pos
+        back_1 = ""
+        back_2 = ""
+        end_h = h - 1
+        end_w = w - 1
+        while (i, j) != (end_h, end_w):
+            if i < end_h and j < end_w:
+                i += 1
+                j += 1
+                back_1 += sequence_1[i-1]
+                back_2 += sequence_2[j-1]
+            elif i < end_h:
+                i += 1
+                back_1 += sequence_1[i-1]
+                back_2 += "*"
+            elif j < end_w:
+                j += 1
+                back_1 += "*"
+                back_2 += sequence_2[j-1]
+        return back_1, back_2
 
     def calculate_alignment_score(seq1, seq2):
         """
