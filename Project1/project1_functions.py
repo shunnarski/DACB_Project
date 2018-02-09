@@ -17,26 +17,41 @@ def Get_Sequences(file_1, file_2):
     # get only the sequence letters, initially this will be a list of different sets
     # of letters due to the line breaks in the .txt file
     with file1 as f:
-        human = f.read().splitlines()[1::]
+        seq_1 = f.read().splitlines()
 
     with file2 as f:
-        mouse = f.read().splitlines()[1::]
+        seq_2 = f.read().splitlines()
 
     file1.close()
     file2.close()
 
+    # in case the .txt files has empty lines above the first ">" line
+    seq_i = 0
+    for x in range(len(seq_1)):
+        if seq_1[x][0:1:] == ">":
+            seq_i = x
+    seq_i += 1
+    seq_1 = seq_1[seq_i::]
+
+    seq_2_i = 0
+    for x in range(len(seq_2)):
+        if seq_2[x][0:1:] == ">":
+            seq_2_i = x
+    seq_2_i += 1
+    seq_2 = seq_2[seq_2_i::]
+
     # concatenate the strings of hemoglobin codes to one sequence
-    human_sequence = ""
-    mouse_sequence = ""
+    sequence_1 = ""
+    sequence_2 = ""
 
-    for s in human:
-        human_sequence += s
+    for s in seq_1:
+        sequence_1 += s
 
-    for s in mouse:
-        mouse_sequence += s
+    for s in seq_2:
+        sequence_2 += s
 
     # set the human and mouse sequences to a tuple called sequences
-    sequences = (human_sequence, mouse_sequence)
+    sequences = (sequence_1, sequence_2)
 
     # return the tuple of sequences
     return sequences
@@ -60,7 +75,7 @@ def Build_Scoring_Matrix(file_1):
     4. Return the dictionary
     """
     # list of proteins used in the BLOSUM62 matrix
-    aminos = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y',
+    protiens = ['A', 'R', 'N', 'D', 'C', 'Q', 'E', 'G', 'H', 'I', 'L', 'K', 'M', 'F', 'P', 'S', 'T', 'W', 'Y',
                 'V', 'B', 'Z', 'X', '*']
 
     file = open(file_1, "r")
@@ -73,13 +88,13 @@ def Build_Scoring_Matrix(file_1):
         m[x] = m[x].split()[1::]
 
     # dimensions of blosum62 matrix
-    dim = len(aminos)
+    dim = len(protiens)
 
     # create dictionary we're returning with appropriate key-value pairs
     blosum_dict = {}
     for row in range(dim):
         for column in range(dim):
-            tup = (aminos[row], aminos[column])
+            tup = (protiens[row], protiens[column])
             val = int(m[row][column])
             blosum_dict[tup] = val
 
@@ -103,8 +118,8 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
     blosum_dict = scoring_matrix
 
     # Build the matrix
-    w = len(sequence_1) + 1
-    h = len(sequence_2) + 1
+    h = len(sequence_1) + 1
+    w = len(sequence_2) + 1
 
     def build_sw_matrix(w, h):
         """
@@ -136,14 +151,15 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
                 if val > max_score:
                     max_score = val
                     max_pos = (i, j)
+        print "What score should be: %d" % max_score
         return max_pos
+
 
     def calc_cell_val(matrix, i, j):
         """
         Calculate the score of the matrix cell by using the sum of its blosum value
         and the cells above, left, and upper-left, then return the largest of these values
         """
-
         gap = -4  # gaps are typically -4 in the blosum matrix
         dict_val = blosum_dict[(sequence_1[i - 1], sequence_2[j - 1])]
         l = matrix[i - 1][j] + gap  # left cell
@@ -159,29 +175,69 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
         left cell values to determine the best possible path. Once the first 0 is hit in the backtracking
         process, we're done. Return the two aligned sequences.
         """
+        # print_matrix(sw_matrix, h, sequence_1, sequence_2)
         i, j = start_pos
         align1 = ""
         align2 = ""
+        gap = -4
         while sw_matrix[i][j] != 0:  # once a cell is 0, backtarck ends
             u_l = sw_matrix[i - 1][j - 1]  # upper-left cell
-            u = sw_matrix[i][j - 1]  # upper cell
-            l = sw_matrix[i - 1][j - 1]  # left cell
+            u = sw_matrix[i-1][j]  # upper cell
+            l = sw_matrix[i][j - 1]  # left cell
             if u_l >= u and u_l >= l:  # choose the largest of the three
                 align1 += sequence_1[i - 1]  # append the character in the sequence to the aligned sequence
                 align2 += sequence_2[j - 1]
                 i -= 1  # decrement to move back up the matrix
                 j -= 1
             elif u > u_l and u >= l:
-                align1 += sequence_1[i - 1]
-                align2 += "*"  # represents a space
-                i -= 1
+                if (u_l - u) >= gap: # sometimes the largest number isn't always the direction we want to go and its better if we
+                                    # go diagonal. If the difference between going diagonal is better than putting a gap in the alignment,
+                                    # go diagonal instead.
+                    align1 += sequence_1[i - 1]
+                    align2 += sequence_2[j - 1]
+                    i -= 1
+                    j -= 1
+                else:
+                    align1 += sequence_1[i - 1]
+                    align2 += "*"  # represents a space
+                    i -= 1
             elif l > u_l and l >= u:
-                align1 += "*"
-                align2 += sequence_2[j - 1]
-                j -= 1
+                if (u_l - l) >= gap:
+                    align1 += sequence_1[i - 1]  # append the character in the sequence to the aligned sequence
+                    align2 += sequence_2[j - 1]
+                    i -= 1  # decrement to move back up the matrix
+                    j -= 1
+                else:
+                    align1 += "*"
+                    align2 += sequence_2[j - 1]
+                    j -= 1
         align1 = align1[::-1]  # reverse the strings we made from backtracking. This will be our final alignment
         align2 = align2[::-1]
         return align1, align2
+
+    # def print_matrix(matrix, rows, sequence_1, sequence_2):
+    #     let_row = " "
+    #     let_row += "0"
+    #     let_col = "0"
+    #     let_row += sequence_2
+    #     let_col += sequence_1
+    #     row = ""
+    #     for c in let_row:
+    #         row += c
+    #         row += "    "
+    #
+    #     print row
+    #     for i in range(rows):
+    #         tmp = matrix[i]
+    #         rslt = let_col[i]
+    #         rslt += "    "
+    #         for j in tmp:
+    #
+    #             rslt += str(j)
+    #             rslt += "    "
+    #         print rslt
+
+
 
     def calculate_alignment_score(seq1, seq2):
         """
@@ -232,11 +288,11 @@ def Output_Sequences(alignment_1, alignment_2, score):
     Append the beginning and end of the local alignment with the remainder of sequence
     Largest value in the scoring matrix is the score that should be output from the immediate local alignment
     """
+
     # replace gaps in alignment with "-" characters to meet output requirements
     alignment_1 = alignment_1.replace("*", "-")
     alignment_2 = alignment_2.replace("*", "-")
 
-    print
     print "Score: %d" % score
     # generate the result string in between the two alignments
     result = ""
