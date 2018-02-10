@@ -10,9 +10,10 @@ class Blosum62Alignment:
     self.s2 = [""] + utils.fasta_to_seq(s2_filename)
     print(self.s1)
     print(self.s2)
-    self.scr_matrix = self.__init_scr_matrix(self.s1, self.s2)
+    self.alg = alg
+    self.scr_matrix = self.__init_scr_matrix(self.s1, self.s2, self.alg)
 
-  def __init_scr_matrix(s1, s2):
+  def __init_scr_matrix(s1, s2, alg):
 
 
 Blosum62Alignment("mouse_hemoglobin_alpha.fasta.txt", "human_hemoglobin_alpha.fasta.txt", "")

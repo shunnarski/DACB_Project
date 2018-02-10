@@ -5,3 +5,10 @@ def fasta_to_seq(filename):
   seq = list("".join(l))
   f.close()
   return seq
+
+def init_matrix(w, h):
+  return [[0 for col in range(w)] for row in range(h)]
+
+def print_2d(m):
+  for x in m:
+    print(*x, sep="\t")
