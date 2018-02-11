@@ -1,3 +1,5 @@
+from NeedlemanWunsch import NeedlemanWunsch
+
 def Get_Sequences(file_1, file_2):
     """
 	Reads sequences from the two input files
@@ -314,7 +316,8 @@ def Needleman_Wunsch(sequence_1, sequence_2, scoring_matrix):
 	Returns:
 		Returns the two aligned sequences and the score in a tuple of the form (str, str, int)
 	"""
-    return "", "", 0
+    nw = NeedlemanWunsch(sequence_1, sequence_2, (1, -1, -1), scoring_matrix)
+    return nw.ss1, nw.ss2, nw.score()
 
 
 def Output_Sequences(alignment_1, alignment_2, score):
@@ -329,7 +332,7 @@ def Output_Sequences(alignment_1, alignment_2, score):
 	"""
     """
     Notes:
-    
+
     Append the beginning and end of the local alignment with the remainder of sequence
     Largest value in the scoring matrix is the score that should be output from the immediate local alignment
     """
