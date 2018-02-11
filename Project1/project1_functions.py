@@ -316,9 +316,8 @@ def Needleman_Wunsch(sequence_1, sequence_2, scoring_matrix):
 	Returns:
 		Returns the two aligned sequences and the score in a tuple of the form (str, str, int)
 	"""
-    nw = NeedlemanWunsch(sequence_1, sequence_2, (1, -1, -1))
-    (ss1, ss2) = nw.traceback()
-    return ss1, ss2, nw.score()
+    nw = NeedlemanWunsch(sequence_1, sequence_2, (1, -1, -1), scoring_matrix)
+    return nw.ss1, nw.ss2, nw.score()
 
 
 def Output_Sequences(alignment_1, alignment_2, score):
