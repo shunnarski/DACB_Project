@@ -8,6 +8,6 @@ NW_sequence1, NW_sequence2, NW_score = p1f.Needleman_Wunsch(sequence1, sequence2
 
 print
 print "SMITH-WATERMAN:"
-p1f.Output_Sequences(SW_sequence1, SW_sequence2, SW_score)
+p1f.Output_Sequences(SW_sequence1, SW_sequence2, SW_score, BLOSUM_matrix)
 print "NEEDLEMAN-WUNSCH:"
-p1f.Output_Sequences(NW_sequence1, NW_sequence2, NW_score)
+p1f.Output_Sequences(NW_sequence1, NW_sequence2, NW_score, BLOSUM_matrix)

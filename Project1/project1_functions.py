@@ -134,41 +134,41 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
         # initialize matrix size with all zeroes
         matrix = [[0 for c in range(w)] for r in range(h)]
 
+        # calculate and fill cell values
         for i in range(1, h):
             for j in range(1, w):
-                score = calc_cell_val(matrix, i, j)
-                matrix[i][j] = score
+                cell_val = calc_cell_val(matrix, (i, j))
+                matrix[i][j] = cell_val
         return matrix
+
+    def calc_cell_val(matrix, pos):
+        """
+        Calculate the score of the matrix cell by using the sum of its blosum value
+        and the cells above, left, and upper-left, then return the largest of these values
+        """
+        i, j = pos
+        dict_val = blosum_dict[(sequence_1[i - 1], sequence_2[j - 1])]
+        l = matrix[i - 1][j] - 4  # left cell
+        u = matrix[i][j - 1] - 4  # above cell
+        u_l = matrix[i - 1][j - 1] + dict_val  # upper-left cell
+
+        rslt = max(l, u, u_l, 0) # return largest of values. if 0 is biggest, return that
+        return rslt
 
     def get_start_pos(sw_matrix):
         """
         Look through the Smith-Waterman matrix to find the largest value and return the
         position of the largest value
         """
-        max_score = 0
-        max_pos = (0, 0)
+        max = 0
         for i in range(h):
             for j in range(w):
                 val = sw_matrix[i][j]
-                if val > max_score:
-                    max_score = val
-                    max_pos = (i, j)
-        print "Local alignment only score: %d" % max_score
-        return max_pos
-
-
-    def calc_cell_val(matrix, i, j):
-        """
-        Calculate the score of the matrix cell by using the sum of its blosum value
-        and the cells above, left, and upper-left, then return the largest of these values
-        """
-        gap = -4  # gaps are typically -4 in the blosum matrix
-        dict_val = blosum_dict[(sequence_1[i - 1], sequence_2[j - 1])]
-        l = matrix[i - 1][j] + gap  # left cell
-        u = matrix[i][j - 1] + gap  # above cell
-        u_l = matrix[i - 1][j - 1] + dict_val  # upper-left cell
-
-        return max(l, u, u_l, 0)  # return largest of values. if 0 is biggest, return that
+                if val > max:
+                    start_x = i
+                    start_y = j
+                    max = val
+        return start_x, start_y
 
     def backtrack(sw_matrix, start_pos):
         """
@@ -316,11 +316,11 @@ def Needleman_Wunsch(sequence_1, sequence_2, scoring_matrix):
 	Returns:
 		Returns the two aligned sequences and the score in a tuple of the form (str, str, int)
 	"""
-    nw = NeedlemanWunsch(sequence_1, sequence_2, (1, -1, -1), scoring_matrix)
+    nw = NeedlemanWunsch(sequence_1, sequence_2, (1, -1, -4), scoring_matrix)
     return nw.ss1, nw.ss2, nw.score()
 
 
-def Output_Sequences(alignment_1, alignment_2, score):
+def Output_Sequences(alignment_1, alignment_2, score, scoring_matrix):
     """
 	Prints (or writes to a file?) the score and two aligned sequences in the format specifed by the project documentation
 
@@ -337,6 +337,8 @@ def Output_Sequences(alignment_1, alignment_2, score):
     Largest value in the scoring matrix is the score that should be output from the immediate local alignment
     """
 
+    blosum_dict = scoring_matrix
+
     # replace gaps in alignment with "-" characters to meet output requirements
     alignment_1 = alignment_1.replace("*", "-")
     alignment_2 = alignment_2.replace("*", "-")
@@ -345,7 +347,8 @@ def Output_Sequences(alignment_1, alignment_2, score):
     # generate the result string in between the two alignments
     result = ""
     for c in range(len(alignment_1)):
-        if alignment_1[c] == alignment_2[c]:
+        tmp = blosum_dict[alignment_1[c], alignment_2[c]]
+        if alignment_1[c] == alignment_2[c] or tmp > 0:
             result += "|"
         elif alignment_1[c] == "-" or alignment_2[c] == "-":
             result += " "
