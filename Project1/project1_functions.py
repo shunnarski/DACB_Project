@@ -137,23 +137,14 @@ def Smith_Waterman(sequence_1, sequence_2, scoring_matrix):
         # calculate and fill cell values
         for i in range(1, h):
             for j in range(1, w):
-                cell_val = calc_cell_val(matrix, (i, j))
+                dict_val = blosum_dict[(sequence_1[i - 1], sequence_2[j - 1])]
+                l = matrix[i - 1][j] - 4  # left cell
+                u = matrix[i][j - 1] - 4  # above cell
+                u_l = matrix[i - 1][j - 1] + dict_val  # upper-left cell
+                score = max(l, u, u_l, 0)  # return largest of values. if 0 is biggest, return that
+                cell_val = score
                 matrix[i][j] = cell_val
         return matrix
-
-    def calc_cell_val(matrix, pos):
-        """
-        Calculate the score of the matrix cell by using the sum of its blosum value
-        and the cells above, left, and upper-left, then return the largest of these values
-        """
-        i, j = pos
-        dict_val = blosum_dict[(sequence_1[i - 1], sequence_2[j - 1])]
-        l = matrix[i - 1][j] - 4  # left cell
-        u = matrix[i][j - 1] - 4  # above cell
-        u_l = matrix[i - 1][j - 1] + dict_val  # upper-left cell
-
-        rslt = max(l, u, u_l, 0) # return largest of values. if 0 is biggest, return that
-        return rslt
 
     def get_start_pos(sw_matrix):
         """
