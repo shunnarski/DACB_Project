@@ -1,10 +1,19 @@
+from random import sample, seed
+from Tree import Node, Display_Tree
+from ID3 import ID3
 
 def read_file(filename):
     """
     :param filename: Gets the sequences from the Proteins.fa and Proteins.sa files
     :return: A list of sequences of amino acids and their results in the files
     """
-    pass
+    Data = []
+    with open(filename, "r") as data_file:
+	    for line in data_file:
+		    if ">" not in line: 
+				Data.append(list(line.strip()))
+
+    return Data
 
 
 def split_data(acids, labels):
@@ -18,26 +27,74 @@ def split_data(acids, labels):
     :return: A tuple containing the training set of data and the test data in the form (acid_train, acid_test,
     label_train, label_test)
     """
-    pass
 
-def build_feature_matrix():
-    """
+    # Initialize data
+    seed(0)
+    acid_train = []
+    acid_test = []
+    label_train = []
+    label_test = []
+    num_total = len(acids)
 
-    :return: A matrix or vector containing all the features for all 20 amino acids
-    """
-    pass
+    # Determine test set indices
+    test_indicies = sample(range(num_total), int(num_total*.25))
 
-def build_decision_tree(feature_matrix, training_data_acids, training_data_labels):
+    # Split the data based on test indices
+    for i in range(num_total):
+        # Add to test set
+        if i in test_indicies:
+            acid_test.append(acids[i])
+            label_test.append(labels[i])
+        # Add to training set
+        else:
+            acid_train.append(acids[i])
+            label_train.append(labels[i])
+
+    return acid_train, acid_test, label_train, label_test
+
+def extract_features(sequences):
     """
-    Based on the feature matrix, the training data, and information gain,
+    :param sequences: list of proten sequences
+    :return: return the extracted features from the sequences
+    """
+    
+    feature_dict = {}
+    feature_vectors = []
+
+    # Create the feature vector look up table
+    with open("Residue_Features.txt", "r") as feature_file:
+	    for line in feature_file:
+		    line = line.strip().split(" ")
+		    feature_dict[line[0]] = [int(x) for x in line[1:]]
+
+    # Extract features from the sequences
+    for sequence in sequences:
+        sequence_features = []
+        for residue in sequence:
+            sequence_features.append(feature_dict[residue])
+        feature_vectors.append(sequence_features)
+
+    return feature_vectors
+
+
+def build_decision_tree(training_data_acids, training_data_labels):
+    """
+    Based on the training data and information gain,
     build a decision tree that can accurately predict if an amino acid
     will be exposed(e) or buried(-)
-    :param feature_matrix: feature matrix used to represent nodes in decision tree
     :param training_data_acids: The amino acids in the training data set
     :param training_data_labels: The labels in the training data set
     :return: A binary tree that represents a decision tree based on the given features
     """
-    pass
+    flat_training_data_acids = []
+    flat_training_data_labels = []
+    for x, y in zip(training_data_acids, training_data_labels):
+        flat_training_data_acids.extend(x)
+        flat_training_data_labels.extend(y)
+    attributes = [i for i in range(10)]
+    decision_tree = ID3(attributes, flat_training_data_acids, flat_training_data_labels)
+    Display_Tree(decision_tree)
+    return decision_tree
 
 def traverse_tree(decision_tree, test_data_acids, test_data_labels):
     """
