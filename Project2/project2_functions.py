@@ -8,10 +8,11 @@ def read_file(filename):
     :return: A list of sequences of amino acids and their results in the files
     """
     Data = []
+    print "reading file {} ...".format(filename)
     with open(filename, "r") as data_file:
-	    for line in data_file:
-		    if ">" not in line: 
-				Data.append(list(line.strip()))
+        for line in data_file:
+            if ">" not in line: 
+                Data.append(list(line.strip()))
 
     return Data
 
@@ -27,7 +28,7 @@ def split_data(acids, labels):
     :return: A tuple containing the training set of data and the test data in the form (acid_train, acid_test,
     label_train, label_test)
     """
-
+    print "Calculating splits ..."
     # Initialize data
     seed(0)
     acid_train = []
@@ -58,14 +59,15 @@ def extract_features(sequences):
     :return: return the extracted features from the sequences
     """
     
+    print "Extracting features ..."
     feature_dict = {}
     feature_vectors = []
 
     # Create the feature vector look up table
     with open("Residue_Features.txt", "r") as feature_file:
-	    for line in feature_file:
-		    line = line.strip().split(" ")
-		    feature_dict[line[0]] = [int(x) for x in line[1:]]
+        for line in feature_file:
+            line = line.strip().split(" ")
+            feature_dict[line[0]] = [int(x) for x in line[1:]]
 
     # Extract features from the sequences
     for sequence in sequences:
@@ -86,11 +88,17 @@ def build_decision_tree(training_data_acids, training_data_labels):
     :param training_data_labels: The labels in the training data set
     :return: A binary tree that represents a decision tree based on the given features
     """
+
+    print "Building tree ..."
+
+    # Flatten the data for training
     flat_training_data_acids = []
     flat_training_data_labels = []
     for x, y in zip(training_data_acids, training_data_labels):
         flat_training_data_acids.extend(x)
         flat_training_data_labels.extend(y)
+
+    # Build decision tree with training data
     attributes = [i for i in range(10)]
     decision_tree = ID3(attributes, flat_training_data_acids, flat_training_data_labels)
     Display_Tree(decision_tree)
