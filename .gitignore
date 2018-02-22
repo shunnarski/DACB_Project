@@ -2,3 +2,5 @@ Project2/.vs/ProjectSettings.json
 *.suo
 Project2/.vs/slnx.sqlite
 *.pyc
+*.json
+*.config
