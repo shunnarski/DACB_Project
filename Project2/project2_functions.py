@@ -1,6 +1,7 @@
 from random import sample, seed
-from Tree import Node, Display_Tree
-from ID3 import ID3
+from Tree import Node
+from ID3 import ID3, Predict
+from math import sqrt
 
 def read_file(filename):
     """
@@ -53,15 +54,16 @@ def split_data(acids, labels):
 
     return acid_train, acid_test, label_train, label_test
 
-def extract_features(sequences):
+def extract_features(sequences, labels):
     """
     :param sequences: list of proten sequences
     :return: return the extracted features from the sequences
     """
-    
+
     print "Extracting features ..."
     feature_dict = {}
     feature_vectors = []
+    new_labels = []
 
     # Create the feature vector look up table
     with open("Residue_Features.txt", "r") as feature_file:
@@ -70,13 +72,17 @@ def extract_features(sequences):
             feature_dict[line[0]] = [int(x) for x in line[1:]]
 
     # Extract features from the sequences
-    for sequence in sequences:
+    for sequence, label_list in zip(sequences, labels):
         sequence_features = []
-        for residue in sequence:
-            sequence_features.append(feature_dict[residue])
+        new_label = []
+        for residue, label in zip(sequence, label_list):
+            if residue != "X":
+                sequence_features.append(feature_dict[residue])
+                new_label.append(label)
         feature_vectors.append(sequence_features)
+        new_labels.append(new_label)
 
-    return feature_vectors
+    return feature_vectors, new_labels
 
 
 def build_decision_tree(training_data_acids, training_data_labels):
@@ -99,9 +105,9 @@ def build_decision_tree(training_data_acids, training_data_labels):
         flat_training_data_labels.extend(y)
 
     # Build decision tree with training data
-    attributes = [i for i in range(10)]
+    attributes = [i for i in range(len(training_data_acids[0][0]))]
     decision_tree = ID3(attributes, flat_training_data_acids, flat_training_data_labels)
-    Display_Tree(decision_tree)
+
     return decision_tree
 
 def traverse_tree(decision_tree, test_data_acids, test_data_labels):

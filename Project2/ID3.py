@@ -66,19 +66,23 @@ def ID3(Attributes, X, Y):
     if len(max_positive_split[0]) > 0:
         current_node.Positive_Branch = ID3(Attributes, max_positive_split[0], max_positive_split[1])
     else:
-        if max_positive_split[2] >= 0.5:
+        if num_positive > num_negative:
             current_node.Positive_Branch = Node(label='e')
-        else:
+        elif num_positive < num_negative:
             current_node.Positive_Branch = Node(label='-')
+        else:
+            current_node.Positive_Branch = Node(label=random.choice(['e','-']))
 
     # Build negative child node
     if len(max_negative_split[0]) > 0:
         current_node.Negative_Branch = ID3(Attributes, max_negative_split[0], max_negative_split[1])
     else:
-        if max_negative_split[2] >= 0.5:
+        if num_positive > num_negative:
             current_node.Negative_Branch = Node(label='e')
-        else:
+        elif num_positive < num_negative:
             current_node.Negative_Branch = Node(label='-')
+        else:
+            current_node.Negative_Branch = Node(label=random.choice(['e','-']))
     return current_node
 
 def H(proportion_pos):
