@@ -104,15 +104,50 @@ def build_decision_tree(training_data_acids, training_data_labels):
     Display_Tree(decision_tree)
     return decision_tree
 
-def traverse_tree(decision_tree, test_data_acids, test_data_labels):
+
+def get_predicted_value(decision_tree, test_instance):
+    """
+
+    :param decision_tree: Decision tree built from build_decision_tree
+    :param test_instance: Amino acids instance from test data set
+    :return:
+    """
+
+    if decision_tree.Label != None:
+        return decision_tree.Label
+
+    if test_instance[decision_tree.Attribute] == 1:
+        next_decision_tree_node = decision_tree.Positive_Branch
+    else:
+        next_decision_tree_node = decision_tree.Negative_Branch
+
+    return get_predicted_value(next_decision_tree_node, test_instance)
+
+
+def traverse_tree(decision_tree, test_data_acids):
     """
 
     :param decision_tree: Decision tree built from build_decision_tree
     :param test_data_acids: Amino acids from test data set
-    :param test_data_labels: The labels in the test data set
     :return: A list of the labels generated from traversing the decision tree
     """
-    pass
+
+    print "Traversing tree ..."
+
+    list_of_test_instance_labels = []
+    test_instance_labels = []
+
+    for test_instances in test_data_acids:
+        for test_instance in test_instances:
+            test_instance_label = get_predicted_value(decision_tree, test_instance)
+            test_instance_labels.append(test_instance_label)
+
+        print '%s' % ''.join(map(str, test_instance_labels))
+
+        list_of_test_instance_labels.append(test_instance_labels)
+        test_instance_labels = []
+
+    return list_of_test_instance_labels
 
 def evaluate(test_data, results_data):
     """
