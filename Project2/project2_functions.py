@@ -3,6 +3,7 @@ from Tree import Node
 from ID3 import ID3
 from math import sqrt
 
+
 def read_file(filename):
     """
     :param filename: Gets the sequences from the Proteins.fa and Proteins.sa files
@@ -53,6 +54,7 @@ def split_data(acids, labels):
             label_train.append(labels[i])
 
     return acid_train, acid_test, label_train, label_test
+
 
 def extract_features(sequences, labels):
     """
@@ -135,7 +137,7 @@ def traverse_tree(decision_tree, test_data_acids):
             # add the label to the inner loop labels
             test_instance_labels.append(test_instance_label)
 
-        print '%s' % ''.join(map(str, test_instance_labels))
+        #print '%s' % ''.join(map(str, test_instance_labels))
 
         # add the inner loop labels to the final return list
         list_of_test_instance_labels.append(test_instance_labels)
@@ -176,4 +178,49 @@ def evaluate(test_data, results_data):
     :param results_data: list of the labels generated in the traverse_tree method
     :return: void
     """
-    pass
+
+    print "Evaluating results ...\n"
+
+    fp = 0  # false positive
+    fn = 0  # false negative
+    tp = 0  # true positive
+    tn = 0  # true negative
+
+    index = 0
+    while index < len(results_data):
+        for label_index, results_label in enumerate(results_data[index]):
+            test_label = test_data[index][label_index]
+            if test_label == 'e':
+                # positive case
+                if results_label == 'e':
+                    tp += 1
+                else:
+                    # results_data == '-'
+                    fn += 1
+            if test_label == '-':
+                # negative case
+                if results_label == '-':
+                    tn += 1
+                else:
+                    # results_data == 'e'
+                    fp += 1
+
+        index += 1
+
+    accuracy = (tp + tn) / float(tp + tn + fp + fn)
+    print 'Accuracy: %.3f' % accuracy
+
+    precision = tp / float(tp + fp)
+    print 'Precision: %.3f' % precision
+
+    recall = tp / float(tp + fn)
+    print 'Recall: %.3f' % recall
+
+    f1_score = (recall * precision * 2) / (recall + precision)
+    print 'F1 score: %.3f' % f1_score
+
+    # Mathews Correlation Coefficient
+    mcc_num = (tp * tn) - (fp * fn)
+    mcc_denom = pow(((tp + fp)*(tp + fn)*(tn + fp)*(tn + fn)), 0.5)
+    mcc = mcc_num / mcc_denom
+    print 'Mathews Correlation Coefficient: %.3f' % mcc
