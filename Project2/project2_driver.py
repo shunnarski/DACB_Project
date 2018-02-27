@@ -7,7 +7,7 @@ if len(sys.argv) != 3:
 
 amino_acids = p2f.read_file(sys.argv[1])
 amino_labels = p2f.read_file(sys.argv[2])
-amino_acids = p2f.extract_features(amino_acids)
+amino_acids, amino_labels = p2f.extract_features(amino_acids, amino_labels)
 
 acid_train, acid_test, label_train, label_test = p2f.split_data(amino_acids, amino_labels)
 
