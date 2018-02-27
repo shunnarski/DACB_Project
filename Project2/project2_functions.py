@@ -1,6 +1,6 @@
 from random import sample, seed
 from Tree import Node
-from ID3 import ID3, Predict
+from ID3 import ID3
 from math import sqrt
 
 def read_file(filename):
