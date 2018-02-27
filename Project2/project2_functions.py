@@ -111,28 +111,6 @@ def build_decision_tree(training_data_acids, training_data_labels):
     return decision_tree
 
 
-def predict_exposed_buried(decision_tree, test_instance):
-    """
-    :param decision_tree: Decision tree built from build_decision_tree
-    :param test_instance: Amino acids instance from test data set
-    :return: either 'e' or '-' for exposed or buried, respectively
-    """
-
-    # Base case
-    if decision_tree.Label is not None:
-        return decision_tree.Label
-
-    if test_instance[decision_tree.Attribute] == 1:
-        # if the instance node has a '1' in the index slot for this attribute, then take the positive branch route
-        next_decision_tree_node = decision_tree.Positive_Branch
-    else:
-        # if the instance node has a '0' in the index slot for this attribute, then take the negative branch route
-        next_decision_tree_node = decision_tree.Negative_Branch
-
-    # recurse with positive or negative branch
-    return predict_exposed_buried(next_decision_tree_node, test_instance)
-
-
 def traverse_tree(decision_tree, test_data_acids):
     """
     :param decision_tree: Decision tree built from build_decision_tree
@@ -166,6 +144,28 @@ def traverse_tree(decision_tree, test_data_acids):
         test_instance_labels = []
 
     return list_of_test_instance_labels
+
+
+def predict_exposed_buried(decision_tree, test_instance):
+    """
+    :param decision_tree: Decision tree built from build_decision_tree
+    :param test_instance: Amino acids instance from test data set
+    :return: either 'e' or '-' for exposed or buried, respectively
+    """
+
+    # Base case
+    if decision_tree.Label is not None:
+        return decision_tree.Label
+
+    if test_instance[decision_tree.Attribute] == 1:
+        # if the instance node has a '1' in the index slot for this attribute, then take the positive branch route
+        next_decision_tree_node = decision_tree.Positive_Branch
+    else:
+        # if the instance node has a '0' in the index slot for this attribute, then take the negative branch route
+        next_decision_tree_node = decision_tree.Negative_Branch
+
+    # recurse with positive or negative branch
+    return predict_exposed_buried(next_decision_tree_node, test_instance)
 
 
 def evaluate(test_data, results_data):
