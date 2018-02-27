@@ -13,8 +13,11 @@ def read_file(filename):
     print "reading file {} ...".format(filename)
     with open(filename, "r") as data_file:
         for line in data_file:
+            line = line.strip()
+            if len(line) == 0:
+                continue
             if ">" not in line: 
-                Data.append(list(line.strip()))
+                Data.append(list(line))
 
     return Data
 
