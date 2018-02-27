@@ -111,28 +111,30 @@ def build_decision_tree(training_data_acids, training_data_labels):
     return decision_tree
 
 
-def get_predicted_value(decision_tree, test_instance):
+def predict_exposed_buried(decision_tree, test_instance):
     """
-
     :param decision_tree: Decision tree built from build_decision_tree
     :param test_instance: Amino acids instance from test data set
-    :return:
+    :return: either 'e' or '-' for exposed or buried, respectively
     """
 
-    if decision_tree.Label != None:
+    # Base case
+    if decision_tree.Label is not None:
         return decision_tree.Label
 
     if test_instance[decision_tree.Attribute] == 1:
+        # if the instance node has a '1' in the index slot for this attribute, then take the positive branch route
         next_decision_tree_node = decision_tree.Positive_Branch
     else:
+        # if the instance node has a '0' in the index slot for this attribute, then take the negative branch route
         next_decision_tree_node = decision_tree.Negative_Branch
 
-    return get_predicted_value(next_decision_tree_node, test_instance)
+    # recurse with positive or negative branch
+    return predict_exposed_buried(next_decision_tree_node, test_instance)
 
 
 def traverse_tree(decision_tree, test_data_acids):
     """
-
     :param decision_tree: Decision tree built from build_decision_tree
     :param test_data_acids: Amino acids from test data set
     :return: A list of the labels generated from traversing the decision tree
@@ -143,17 +145,28 @@ def traverse_tree(decision_tree, test_data_acids):
     list_of_test_instance_labels = []
     test_instance_labels = []
 
+    # iterate through amino acid sequences
     for test_instances in test_data_acids:
+
+        # iterate through amino acid in sequences
         for test_instance in test_instances:
-            test_instance_label = get_predicted_value(decision_tree, test_instance)
+
+            # get exposed or buried prediction using decision tree, given the test instance
+            test_instance_label = predict_exposed_buried(decision_tree, test_instance)
+
+            # add the label to the inner loop labels
             test_instance_labels.append(test_instance_label)
 
         print '%s' % ''.join(map(str, test_instance_labels))
 
+        # add the inner loop labels to the final return list
         list_of_test_instance_labels.append(test_instance_labels)
+
+        # clear the inner loops list to avoid duplicate labels
         test_instance_labels = []
 
     return list_of_test_instance_labels
+
 
 def evaluate(test_data, results_data):
     """
