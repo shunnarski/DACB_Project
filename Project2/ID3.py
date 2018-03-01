@@ -194,3 +194,44 @@ def Calculate_Counts(Y):
         else:
             num_negative += 1
     return num_positive, num_negative
+
+def Serialize_Tree(T, file_name="Tree.model"):
+    Q = []
+    Q.append((0,T))
+    node_id = 0
+    with open(file_name, "w") as output_file:
+        output_file.write("{},{},{},{},{}\n".format(0,T.Attribute,T.Label,0,"+"))
+        while len(Q) > 0:
+            parent_id, current_node = Q.pop()
+            if current_node.Attribute is not None:
+                positive_child_id = node_id + 1
+                negative_child_id = node_id + 2
+                Q.append((positive_child_id,current_node.Positive_Branch))
+                Q.append((negative_child_id,current_node.Negative_Branch))
+                output_file.write("{},{},{},{},{}\n".format(positive_child_id,current_node.Positive_Branch.Attribute,current_node.Positive_Branch.Label,parent_id,"+"))
+                output_file.write("{},{},{},{},{}\n".format(negative_child_id,current_node.Negative_Branch.Attribute,current_node.Negative_Branch.Label,parent_id,"-"))
+                node_id += 2
+
+def Deserialize_Tree(file_name="Tree.model"):
+    nodes = {}
+    num_nodes = 0
+    with open(file_name, "r") as input_file:
+        for line in input_file:
+            line = line.strip().split(",")
+            node_id, attribute, label, parent_id, parity = line
+            node_id = int(node_id)
+            parent_id = int(parent_id)
+            if attribute != "None":
+                attribute = int(attribute)
+            else:
+                attribute = None
+            if label == "None":
+                label = None
+            nodes[node_id] = [Node(attribute,label),parent_id,parity]
+            num_nodes += 1
+    for i in range(1,num_nodes):
+        if nodes[i][2] is "+":
+            nodes[nodes[i][1]][0].Positive_Branch = nodes[i][0]
+        else:
+            nodes[nodes[i][1]][0].Negative_Branch = nodes[i][0]
+    return nodes[0][0]

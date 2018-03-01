@@ -1,7 +1,8 @@
 from random import sample, seed
 from Tree import Node
-from ID3 import ID3, Predict
+from ID3 import ID3
 from math import sqrt
+
 
 def read_file(filename):
     """
@@ -12,8 +13,11 @@ def read_file(filename):
     print "reading file {} ...".format(filename)
     with open(filename, "r") as data_file:
         for line in data_file:
+            line = line.strip()
+            if len(line) == 0:
+                continue
             if ">" not in line: 
-                Data.append(list(line.strip()))
+                Data.append(list(line))
 
     return Data
 
@@ -54,7 +58,8 @@ def split_data(acids, labels):
 
     return acid_train, acid_test, label_train, label_test
 
-def extract_features(sequences, labels):
+
+def extract_features(sequences, labels=None):
     """
     :param sequences: list of proten sequences
     :return: return the extracted features from the sequences
@@ -64,6 +69,9 @@ def extract_features(sequences, labels):
     feature_dict = {}
     feature_vectors = []
     new_labels = []
+
+    if labels == None:
+        labels = [[0 for _ in range(len(sequences[0]))] for _ in range(len(sequences))]
 
     # Create the feature vector look up table
     with open("Residue_Features.txt", "r") as feature_file:
@@ -81,7 +89,6 @@ def extract_features(sequences, labels):
                 new_label.append(label)
         feature_vectors.append(sequence_features)
         new_labels.append(new_label)
-
     return feature_vectors, new_labels
 
 
@@ -110,15 +117,63 @@ def build_decision_tree(training_data_acids, training_data_labels):
 
     return decision_tree
 
-def traverse_tree(decision_tree, test_data_acids, test_data_labels):
-    """
 
+def traverse_tree(decision_tree, test_data_acids):
+    """
     :param decision_tree: Decision tree built from build_decision_tree
     :param test_data_acids: Amino acids from test data set
-    :param test_data_labels: The labels in the test data set
     :return: A list of the labels generated from traversing the decision tree
     """
-    pass
+
+    print "Traversing tree ..."
+
+    list_of_test_instance_labels = []
+    test_instance_labels = []
+
+    # iterate through amino acid sequences
+    for test_instances in test_data_acids:
+
+        # iterate through amino acid in sequences
+        for test_instance in test_instances:
+
+            # get exposed or buried prediction using decision tree, given the test instance
+            test_instance_label = predict_exposed_buried(decision_tree, test_instance)
+
+            # add the label to the inner loop labels
+            test_instance_labels.append(test_instance_label)
+
+        #print '%s' % ''.join(map(str, test_instance_labels))
+
+        # add the inner loop labels to the final return list
+        list_of_test_instance_labels.append(test_instance_labels)
+
+        # clear the inner loops list to avoid duplicate labels
+        test_instance_labels = []
+
+    return list_of_test_instance_labels
+
+
+def predict_exposed_buried(decision_tree, test_instance):
+    """
+    :param decision_tree: Decision tree built from build_decision_tree
+    :param test_instance: Amino acids instance from test data set
+    :return: either 'e' or '-' for exposed or buried, respectively
+    """
+
+    # Base case
+    if decision_tree.Label is not None:
+        return decision_tree.Label
+
+    if test_instance[decision_tree.Attribute] == 1:
+        # if the instance node has a '1' in the index slot for this attribute, then take the positive branch route
+        next_decision_tree_node = decision_tree.Positive_Branch
+    else:
+        # if the instance node has a '0' in the index slot for this attribute, then take the negative branch route
+        next_decision_tree_node = decision_tree.Negative_Branch
+
+    # recurse with positive or negative branch
+    return predict_exposed_buried(next_decision_tree_node, test_instance)
+
 
 def evaluate(test_data, results_data):
     """
@@ -128,4 +183,49 @@ def evaluate(test_data, results_data):
     :param results_data: list of the labels generated in the traverse_tree method
     :return: void
     """
-    pass
+
+    print "Evaluating results ...\n"
+
+    fp = 0  # false positive
+    fn = 0  # false negative
+    tp = 0  # true positive
+    tn = 0  # true negative
+
+    index = 0
+    while index < len(results_data):
+        for label_index, results_label in enumerate(results_data[index]):
+            test_label = test_data[index][label_index]
+            if test_label == 'e':
+                # positive case
+                if results_label == 'e':
+                    tp += 1
+                else:
+                    # results_data == '-'
+                    fn += 1
+            if test_label == '-':
+                # negative case
+                if results_label == '-':
+                    tn += 1
+                else:
+                    # results_data == 'e'
+                    fp += 1
+
+        index += 1
+
+    accuracy = (tp + tn) / float(tp + tn + fp + fn)
+    print 'Accuracy: %.3f' % accuracy
+
+    precision = tp / float(tp + fp)
+    print 'Precision: %.3f' % precision
+
+    recall = tp / float(tp + fn)
+    print 'Recall: %.3f' % recall
+
+    f1_score = (recall * precision * 2) / (recall + precision)
+    print 'F1 score: %.3f' % f1_score
+
+    # Mathews Correlation Coefficient
+    mcc_num = (tp * tn) - (fp * fn)
+    mcc_denom = pow(((tp + fp)*(tp + fn)*(tn + fp)*(tn + fn)), 0.5)
+    mcc = mcc_num / mcc_denom
+    print 'Mathews Correlation Coefficient: %.3f' % mcc
