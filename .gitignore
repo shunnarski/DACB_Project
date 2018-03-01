@@ -4,3 +4,4 @@ Project2/.vs/slnx.sqlite
 *.pyc
 *.json
 *.config
+*.model
