@@ -42,7 +42,7 @@ def split_data(acids, labels):
     num_total = len(acids)
 
     # Determine test set indices
-    test_indicies = sample(range(num_total), int(num_total*.25))
+    test_indicies = sample(range(num_total), int(num_total*.5))
 
     # Split the data based on test indices
     for i in range(num_total):
@@ -58,14 +58,46 @@ def split_data(acids, labels):
     return acid_train, acid_test, label_train, label_test
 
 
-def extract_features(sequences):
+def extract_features(sequences, labels):
     """
     Get PSSM values from a given set of sequences
 
     :param sequences: list of proten sequences
     :return: return the extracted features from the sequences
     """
-    pass
+    feature_vectors = []
+    pssm = []
+    pssm.append([-1 for _ in range(20)])
+    pssm.append([-1 for _ in range(20)])
+    
+
+    with open("test.pssm", 'r') as pssm_file:
+        start_read = False
+        for line in pssm_file:
+            line = line.strip()
+            if line == "":
+                continue
+            line = line.split()
+            if line[0] == "1":
+                start_read = True
+            if start_read:
+                scores = [int(x) for x in line[2:22]]
+                pssm.append(scores)
+            if line[0] == "61":
+                break
+    
+    pssm.append([-1 for _ in range(20)])
+    pssm.append([-1 for _ in range(20)])
+    for i in range(2,len(pssm)-2):
+        features = []
+        for j in range(i-2,i+3):
+            features.extend(pssm[j])
+        feature_vectors.append(features)
+    
+    return [[feature_vectors[:30],feature_vectors[30:]], [labels[0][:30],labels[0][30:]]]
+
+
+            
 
 def evaluate(predictions, y):
     """
