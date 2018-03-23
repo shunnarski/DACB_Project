@@ -111,9 +111,9 @@ def evaluate(predictions, y):
     print "Evaluating results ...\n"
 
     correct = 0.0
-    num_total = float(len(y))
+    num_total = float(len(y[0]))
 
-    for pred, actual in zip(predictions, y):
+    for pred, actual in zip(predictions, y[0]):
         if pred == actual:
             correct += 1.0
     return correct/num_total
