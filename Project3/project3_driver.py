@@ -11,8 +11,8 @@ X, y = project3_functions.extract_features(X_raw,y_raw)
 
 X_train, X_test, y_train, y_test = project3_functions.split_data(X,y)
 
-clf.fit(X_train,y_train)
-predictions = clf.predict(X_test)
+means_and_variances, priors = clf.fit(X_train, y_train)
+predictions = clf.predict(X_test, means_and_variances, priors)
 
 accuracy = project3_functions.evaluate(predictions, y_test)
 print "Accuracy: {}".format(accuracy)
