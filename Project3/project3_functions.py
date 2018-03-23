@@ -117,3 +117,15 @@ def evaluate(predictions, y):
         if pred == actual:
             correct += 1.0
     return correct/num_total
+
+
+def create_fasta_files(sequences):
+    """
+    Creates fasta files for a list of sequences to be analyzed with Blast
+
+    :param sequences: list of protein sequences
+    """
+    for i in range(len(sequences)):
+        with open("Data/fasta_files/{}.fa".format(i)) as fasta_file:
+            fasta_file.write(">sequence {}\n".format(i))
+            fasta_file.write("{}\n".format("".join(sequences[i])))
