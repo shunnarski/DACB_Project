@@ -1,16 +1,6 @@
 from random import sample, seed
 from math import sqrt
 
-def read_dataset(filename):
-    X = []
-    y = []
-    with open(filename, "r") as data_file:
-        for line in data_file:
-            line = line.strip().split(",")
-            y.append([line[0]])
-            X.append([[int(x) for x in line[1:]]])
-    return X, y
-
 def read_file(filename):
     """
     :param filename: Gets the sequences from the Proteins.fa and Proteins.ss files
@@ -66,51 +56,6 @@ def split_data(acids, labels):
 
     return acid_train, acid_test, label_train, label_test
 
-
-def extract_features(sequences, labels, num_instances):
-    """
-    Get PSSM values from a given set of sequences
-
-    :param sequences: list of proten sequences
-    :return: return the extracted features from the sequences
-    """
-    all_feature_vectors = []
-    for i in range(num_instances):
-        print i
-        feature_vectors = []
-        pssm = []
-        pssm.append([-1 for _ in range(20)])
-        pssm.append([-1 for _ in range(20)])
-    
-        with open("Data/pssm_files/{}.pssm".format(i), 'r') as pssm_file:
-            start_read = False
-            for line in pssm_file:
-                if "Lambda" in line:
-                    break
-                line = line.strip()
-                if line == "":
-                    continue
-                line = line.split()
-                if line[0] == "1":
-                    start_read = True
-                if start_read:
-                    scores = [int(x) for x in line[2:22]]
-                    pssm.append(scores)
-    
-        pssm.append([-1 for _ in range(20)])
-        pssm.append([-1 for _ in range(20)])
-        for i in range(2,len(pssm)-2):
-            features = []
-            for j in range(i-2,i+3):
-                features.extend(pssm[j])
-            feature_vectors.append(features)
-        all_feature_vectors.append(feature_vectors)
-    
-    return [all_feature_vectors, labels]
-
-
-            
-
 def evaluate(predictions, y):
     """
     Calculate Q3 Accuracy
@@ -125,33 +70,11 @@ def evaluate(predictions, y):
     correct = 0.0
     num_total = float(len(y))
 
-    for pred, actual in zip(predictions, y):
-        if pred == actual:
-            correct += 1.0
+    for pred_seq, actual_seq in zip(predictions, y):
+        for pred_label, actual_label in zip(pred_seq, actual_seq):
+            if pred_label == actual_label:
+                correct += 1.0
     return correct/num_total
-
-
-def create_fasta_files(sequences):
-    """
-    Creates fasta files for a list of sequences to be analyzed with Blast
-
-    :param sequences: list of protein sequences
-    """
-    for i in range(len(sequences)):
-        with open("Data/fasta_files/{}.fa".format(i)) as fasta_file:
-            fasta_file.write(">sequence {}\n".format(i))
-            fasta_file.write("{}\n".format("".join(sequences[i])))
-
-def generate_training_data_file(num_instances):
-    """
-    """
-    Labels = read_file("Data/Proteins.ss")
-    Data, _ = extract_features(None,None,num_instances)
-    with open("protein_dataset.csv", "w") as ds_file:
-        for data, labels in zip(Data, Labels):
-            for instance, label in zip(data, labels):
-                ds_file.write("{},{}\n".format(label,",".join([str(x) for x in instance])))
-
 
 def save_model(means_and_variances, priors, filename):
     with open(filename, "w") as model_file:
