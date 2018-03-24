@@ -123,9 +123,9 @@ def evaluate(predictions, y):
     print "Evaluating results ...\n"
 
     correct = 0.0
-    num_total = float(len(y[0]))
+    num_total = float(len(y))
 
-    for pred, actual in zip(predictions, y[0]):
+    for pred, actual in zip(predictions, y):
         if pred == actual:
             correct += 1.0
     return correct/num_total
@@ -151,5 +151,26 @@ def generate_training_data_file(num_instances):
         for data, labels in zip(Data, Labels):
             for instance, label in zip(data, labels):
                 ds_file.write("{},{}\n".format(label,",".join([str(x) for x in instance])))
+
+
+def save_model(means_and_variances, priors, filename):
+    with open(filename, "w") as model_file:
+        for label in means_and_variances:
+            model_file.write("{},{},{},{}\n".format(label, priors[label], ",".join([str(x) for x in means_and_variances[label][0]]), ",".join([str(x) for x in means_and_variances[label][1]])))
+
+def load_model(filename):
+    mean_and_vars = {}
+    priors = {}
+    with open(filename, "r") as model_file:
+        for line in model_file:
+            line = line.strip().split(",")
+            label = line[0]
+            prior = line[1]
+            means = [float(x) for x in line[2:int((len(line))/2)+1]]
+            vars = [float(x) for x in line[int((len(line))/2)+1:]]
+            mean_and_vars[label] = [means, vars]
+            priors[label] = float(prior)
+    return mean_and_vars, priors
+
 
     

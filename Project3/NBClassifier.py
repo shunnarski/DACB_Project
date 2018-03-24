@@ -66,7 +66,17 @@ class NBClassifier:
 
         print "Calculating means and variances..."
 
-        label_length = len(y)
+        flat_X = []
+        flat_y = []
+        for seq_X, seq_y in zip(X, y):
+            for a_X, a_y in zip(seq_X, seq_y):
+                flat_X.append(a_X)
+                flat_y.append(a_y)
+
+        X = [flat_X]
+        y = [flat_y]
+
+        label_length = len(y[0])
 
         helix_count = 0
         strand_count = 0
@@ -78,6 +88,8 @@ class NBClassifier:
         coil_attributes = []
         labels = y[0]
         attributes = X[0]
+
+        #for seq_X, seq_y in zip(X, y):
 
         for i in range(len(labels)):
             if labels[i] == 'H':
@@ -126,42 +138,45 @@ class NBClassifier:
         print "Making predictions..."
 
         # for some reason X is a list with one element which is a list of the test data which has another list. List-ception.
-        attributes = X[0]
+        sequences = X
 
         predictions = []
 
-        for attr in attributes:
+        for sequence in sequences:
+            seq_predictions = []
+            for feature_vector in sequence:
 
-            helix_gaussian = self.calc_gaussian(m_and_v['H'], attr)
-            strand_gaussian = self.calc_gaussian(m_and_v['E'], attr)
-            coil_gaussian = self.calc_gaussian(m_and_v['C'], attr)
+                helix_gaussian = self.calc_gaussian(m_and_v['H'], feature_vector)
+                strand_gaussian = self.calc_gaussian(m_and_v['E'], feature_vector)
+                coil_gaussian = self.calc_gaussian(m_and_v['C'], feature_vector)
 
-            helix_predict_attr = 1
-            strand_predict_attr = 1
-            coil_predict_attr = 1
+                helix_predict_attr = 1
+                strand_predict_attr = 1
+                coil_predict_attr = 1
 
-            for i in range(len(helix_gaussian)):
-                helix_predict_attr *= helix_gaussian[i]
-                strand_predict_attr *= strand_gaussian[i]
-                coil_predict_attr *= coil_gaussian[i]
+                for i in range(len(helix_gaussian)):
+                    helix_predict_attr *= helix_gaussian[i]
+                    strand_predict_attr *= strand_gaussian[i]
+                    coil_predict_attr *= coil_gaussian[i]
 
-            helix_given_attr = helix_predict_attr * priors['H']
-            strand_given_attr = strand_predict_attr * priors['E']
-            coil_given_attr = coil_predict_attr * priors['C']
-            all_prob = helix_given_attr + strand_given_attr + coil_given_attr
+                helix_given_attr = helix_predict_attr * priors['H']
+                strand_given_attr = strand_predict_attr * priors['E']
+                coil_given_attr = coil_predict_attr * priors['C']
+                all_prob = helix_given_attr + strand_given_attr + coil_given_attr
 
-            helix_predict_label = float(helix_given_attr) / all_prob
-            strand_given_label = float(strand_given_attr) / all_prob
-            coil_given_label = float(coil_given_attr) / all_prob
+                helix_predict_label = float(helix_given_attr) / all_prob
+                strand_given_label = float(strand_given_attr) / all_prob
+                coil_given_label = float(coil_given_attr) / all_prob
 
-            decision = max(helix_predict_label, strand_given_label, coil_given_label)
-            print decision
+                decision = max(helix_predict_label, strand_given_label, coil_given_label)
+                #print decision
 
-            if decision == helix_predict_label:
-                predictions.append('H')
-            elif decision == strand_given_label:
-                predictions.append('E')
-            elif decision == coil_given_label:
-                predictions.append('C')
+                if decision == helix_predict_label:
+                    seq_predictions.append('H')
+                elif decision == strand_given_label:
+                    seq_predictions.append('E')
+                elif decision == coil_given_label:
+                    seq_predictions.append('C')
+            predictions.append(seq_predictions)
 
         return predictions
