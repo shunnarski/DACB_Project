@@ -51,7 +51,7 @@ def split_data(acids, labels):
     num_total = len(acids)
 
     # Determine test set indices
-    test_indicies = sample(range(num_total), int(num_total*.5))
+    test_indicies = sample(range(num_total), int(num_total*.25))
 
     # Split the data based on test indices
     for i in range(num_total):
