@@ -1,15 +1,20 @@
 import os
 from subprocess import call
-
-def extract_features(X):
+from project3_functions import read_file
+def extract_features(X, blast_dir, nr_dir):
     fasta_dir = "Data/tmp/fasta_files"
     pssm_dir = "Data/tmp/pssm_files"
-    call(["mkdir", fasta_dir])
-    call(["mkdir", pssm_dir])
+    try:
+        call(["rm", "-r", "Data/tmp"])
+    except:
+        pass
+    os.mkdir("Data/tmp")
+    os.mkdir("Data/tmp/fasta_files")
+    os.mkdir("Data/tmp/pssm_files")
     create_fasta_files(X, fasta_dir)
-    create_pssm_files(fasta_dir)
+    create_pssm_files(fasta_dir, pssm_dir, blast_dir, nr_dir)
     X =  extract_features_dataset(pssm_dir, len(X))
-    call(["rm -r", "Data/tmp"])
+    call(["rm", "-r", "Data/tmp"])
     return X
 
 
@@ -24,11 +29,14 @@ def create_fasta_files(sequences, fasta_dir):
             fasta_file.write(">sequence {}\n".format(i))
             fasta_file.write("{}\n".format("".join(sequences[i])))
 
-def create_pssm_files(fasta_dir):
+def create_pssm_files(fasta_dir, pssm_dir, blast_dir, nr_dir):
     for filename in os.listdir(fasta_dir):
-        pssm_filename = filename[:-3] + ".pssm"
-        call(["blast/bin", "-d", "nr/nr", "-j", "3"
-              "-b", "1", "-a", "4", "-i", filename,
+        fasta_filename = fasta_dir + "/" + filename
+        pssm_filename = pssm_dir + "/" + filename[:-3] + ".pssm"
+        blast_filename = blast_dir + "/blastpgp"
+        nr_filename = nr_dir + "/nr"
+        call([blast_filename, "-d", nr_filename, "-j", "3",
+              "-b", "1", "-a", "4", "-i", fasta_filename,
               "-Q", pssm_filename])
 
 
@@ -44,7 +52,6 @@ def generate_training_data_file(num_instances):
         for data, labels in zip(Data, Labels):
             for instance, label in zip(data, labels):
                 ds_file.write("{},{}\n".format(label,",".join([str(x) for x in instance])))
-
 
 def extract_features_dataset(pssm_dir, num_instances):
     """
@@ -102,3 +109,4 @@ def read_dataset(filename):
             y.append([line[0]])
             X.append([[int(x) for x in line[1:]]])
     return X, y
+

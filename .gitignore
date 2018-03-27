@@ -6,4 +6,6 @@ Project2/.vs/slnx.sqlite
 *.config
 *.model
 Project3/blast
+Project3/Data
+Project3/nr
 *.sqlite
