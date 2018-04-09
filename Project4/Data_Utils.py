@@ -1,7 +1,7 @@
 import os
 import random
 
-def Get_Data(feature_dir, distance_threshold=6):
+def Get_Data(feature_dir, distance_threshold=6.36494145338):
     X = []
     y = []
     for file in os.listdir(feature_dir):
@@ -25,14 +25,15 @@ def Split_Data(X, Y, test_split=.25):
     test_X = []
     train_Y = []
     test_Y = []
-    test_indices = random.sample(len(X), int(len(X)/test_split))
+    test_indices = random.sample(range(len(X)), int(len(X)*test_split))
     index_counter = 0
     for x, y in zip(X, Y):
         if index_counter in test_indices:
             test_X.append(x)
-            test>y.append(y)
+            test_Y.append(y)
         else:
             train_X.append(x)
-            train_y.append(y)
+            train_Y.append(y)
+        index_counter += 1
     return train_X, test_X, train_Y, test_Y
                 
