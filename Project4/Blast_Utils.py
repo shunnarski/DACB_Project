@@ -1,5 +1,6 @@
 import subprocess
 import os
+import sys
 from multiprocessing import Pool
 
 def Blast_Directory_Parallel(fasta_dir, blast_dir, nr_dir):
@@ -34,20 +35,28 @@ def Extract_Features(pssm_dir):
             continue
         feature_vectors = []
         pssm = Get_PSSM(pssm_dir + file)
-        label_matrix = Get_Label_Matrix(pssm_dir + file[:-5] + ".rr")
-        
+        contact_points, sequence_length = Get_Contact_Points(pssm_dir + file[:-5] + ".rr") 
         with open(pssm_dir + file[:-5] + ".features", "w") as feature_file:
-            for label_key in label_matrix:
-                i = label_key[0] + 2
-                j = label_key[1] + 2
-                d = label_key[2]
-                i_features = pssm[i-2:i+3]
-                j_features = pssm[j-2:j+3]
-                i_flat = [item for sublist in i_features for item in sublist]
-                j_flat = [item for sublist in j_features for item in sublist]
-                i_str = ",".join(x for x in i_flat)
-                j_str = ",".join(x for x in j_flat)
-                feature_file.write("{},{},{}\n".format(d, i_str, j_str)) 
+            
+            for i in range(sequence_length-6):
+                for j in range(i + 5, sequence_length):
+                    if (i,j) in contact_points:
+                        label = 1
+		    else:
+                        label = 0
+                    index_i = i + 2
+                    index_j = j + 2
+                    i_features = pssm[index_i-2:index_i+3]
+                    j_features = pssm[index_j-2:index_j+3]
+                    i_flat = [item for sublist in i_features for item in sublist]
+                    j_flat = [item for sublist in j_features for item in sublist]
+                    i_str = ",".join(i_flat)
+                    j_str = ",".join(j_flat)
+	            if len(i_str) == 0 or len(j_str) == 0:
+                        import pdb
+                        pdb.set_trace()
+                        print file[:-5]
+                    feature_file.write("{},{},{}\n".format(label, i_str, j_str))
 
 def Get_PSSM(blast_output):    
     pssm = []
@@ -74,21 +83,21 @@ def Get_PSSM(blast_output):
         
     return pssm
 
-def Get_Label_Matrix(rr_filename):
-    label_matrix = []
+def Get_Contact_Points(rr_filename):
+    contact_points = set()
     with open(rr_filename, "r") as rr_file:
         start_read = False
         for line in rr_file:
             if not start_read:
                 start_read = True
+                sequence_length = len(line.strip())
                 continue
             line = line.strip().split(" ")
             i = int(line[0]) - 1
             j = int(line[1]) - 1
-            d = line[4]
-            label_matrix.append([i, j, line[4]])
-    return label_matrix
-        
+            contact_points.add((i,j))
+    return contact_points, sequence_length
+            
 
 if __name__ == "__main__":
     blast_dir = "../../blast/bin/blastpgp"

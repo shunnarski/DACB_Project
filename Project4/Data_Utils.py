@@ -1,7 +1,8 @@
 import os
 import random
+import sys
 
-def Get_Data(feature_dir, distance_threshold=6.36494145338):
+def Get_Data(feature_dir):
     X = []
     y = []
     for file in os.listdir(feature_dir):
@@ -13,10 +14,7 @@ def Get_Data(feature_dir, distance_threshold=6.36494145338):
                 label = float(line[0])
                 features = [int(x) for x in line[1:]]
                 features.append(1)
-                if label < distance_threshold:
-                    y.append(1.0)
-                else:
-                    y.append(0.0)
+                y.append(label)
                 X.append(features)
     return X, y
 

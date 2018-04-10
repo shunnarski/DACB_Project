@@ -51,7 +51,7 @@ class LogisticRegression:
     def fit(self, X, Y, X_test=None, Y_test=None, verbose=False):
         self._init_weights(len(X))
         for t in range(self.max_iter):
-            if verbose:
+            if verbose and t % 100 == 0:
                 train_error, _ = self.loss(X, Y)
                 test_error, _ = self.loss(X_test, Y_test)
                 train_error = sum([math.pow(x, 2) for x in train_error])/float(len(X))
