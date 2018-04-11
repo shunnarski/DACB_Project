@@ -48,39 +48,52 @@ class LogisticRegression:
         return error, grads
         
         
-    def fit(self, X, Y, train_index, test_index, verbose=False):
-        train_x, train_y = Get_Data(X, Y, train_index)
-        test_x, test_y = Get_Data(X, Y, test_index)
+    def fit(self, X, Y, train_index, test_index, verbose=False, log_filename="test.log"):
         self._init_weights(len(X[0]))
+        acc_train_error = 0
+        acc_test_error = 0
         for t in range(self.max_iter):
-            if verbose and t % 5 == 0:
-                train_error, _ = self.loss(train_x, train_y)
-                test_error, _ = self.loss(test_x, test_y)
-                train_error = sum([math.pow(x, 2) for x in train_error])/float(len(train_index))
-                test_error = sum([math.pow(x, 2) for x in test_error])/float(len(test_index))
-                print "Training Data MSE: {}".format(train_error)
-                print "Testinng Data MSE: {}".format(test_error)
-                with open("loss.32.log", "a") as log_file:
-                    log_file.write("{},{},{}\n".format(t,train_error, test_error))
+            if verbose and t % 5 == 0 and t != 0:
+                avg_train_error = acc_train_error/(self.batch_size*5.0)
+                avg_test_error = acc_test_error/(self.batch_size*5.0)
+                acc_train_error = 0
+                acc_test_error = 0
+                print "Train Error: {}".format(avg_train_error)
+                print "Test Error: {}\n".format(avg_test_error)
+                with open(log_filename, "a") as log_file:
+                    log_file.write("{},{},{}\n".format(t,avg_train_error, avg_test_error))
+
             batch_index = get_batch_index(train_index, self.batch_size)
+            test_batch_index = get_batch_index(test_index, self.batch_size)
+
             batch_X, batch_Y = Get_Data(X, Y, batch_index)
+            test_batch_X, test_batch_Y = Get_Data(X, Y, test_batch_index)
+
             error, grads = self.loss(batch_X, batch_Y)
+            test_error, _ = self.loss(test_batch_X, test_batch_Y)
+
+            acc_train_error += sum([e**2 for e in error])
+            acc_test_error += sum([e**2 for e in test_error])
+
             weight_delta = [e*g for e, g in zip(error,grads)]
             weight_update = [0 for _ in range(len(batch_X[0]))]
+            
             for i in range(len(batch_X[0])):
                 for j in range(len(batch_X)):
                     weight_update[i] += batch_X[j][i]*weight_delta[j]
                 self.weights[i] += self.learning_rate*(- self.reg_strength*self.weights[i] + weight_update[i]/float(len(batch_X)))
 
         if verbose:
-            train_error, _ = self.loss(train_x, train_y)
-            test_error, _ = self.loss(test_x, test_y)
-            train_error = sum([math.pow(x, 2) for x in train_error])/float(len(train_index))
-            test_error = sum([math.pow(x, 2) for x in test_error])/float(len(test_index))
-            print "Training Data MSE: {}".format(train_error)
-            print "Testinng Data MSE: {}".format(test_error)
-            with open("loss.32.log", "a") as log_file:
-               log_file.write("{},{},{}\n".format(t,train_error, test_error))                   
+            avg_train_error = acc_train_error/(self.batch_size*5.0)
+            avg_test_error = acc_test_error/(self.batch_size*5.0)
+            acc_train_error = 0
+            acc_test_error = 0
+            print "Train Error: {}".format(avg_train_error)
+            print "Test Error: {}\n".format(avg_test_error)
+            with open(log_filename, "a") as log_file:
+                log_file.write("{},{},{}\n".format(t,avg_train_error, avg_test_error))
+
+                 
             
 
     def predict(self, X):

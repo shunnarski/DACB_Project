@@ -2,14 +2,14 @@ import os
 import random
 import sys
 
-def Load_Data(feature_dir):
+def Load_Data(feature_dir, num_read=10):
     X = []
     y = []
     num_sequences = 0
     for file in os.listdir(feature_dir):
         if ".features" not in file:
             continue
-        if num_sequences > 10:
+        if num_sequences > num_read:
             break
             #pass
         with open(feature_dir + file, "r") as feature_file:
@@ -24,11 +24,13 @@ def Load_Data(feature_dir):
     return X, y
 
 def Split_Data(num_instances, test_split=.25):
-    test_indices = random.sample(range(num_instances), int(num_instances*test_split))
     train_indices = []
-    for i in range(num_instances):
-        if i not in test_indices:
-            train_indices.append(i)
+    test_indices = []
+    num_test = int(num_instances*.25)
+    indices = [i for i in range(num_instances)]
+    random.shuffle(indices)
+    test_indices = indices[:num_test]
+    train_indices = indices[num_test:]
     return train_indices, test_indices
 
 def Get_Data(X, Y, indices):
