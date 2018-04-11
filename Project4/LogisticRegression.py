@@ -1,5 +1,6 @@
 import random
 import math
+from Data_Utils import Get_Data
 
 def sigmoid_forward(x):
     return 1/(1+math.exp(-x))
@@ -20,15 +21,14 @@ def get_batch(X, Y, batch_size=32):
     batch_x = []
     batch_y = []
     index_counter = 0
-    for x, y in zip(X, Y):
-        if index_counter in batch_indices:
-            batch_x.append(x)
-            batch_y.append(y)
-        if len(batch_x) == batch_size:
-            break
-        index_counter += 1
+    for index in batch_indices:
+        batch_x.append(X[index])
+        batch_y.append(Y[index])
     return batch_x, batch_y
 
+def get_batch_index(indices, batch_size=32):
+    batch_index = random.sample(indices, batch_size)
+    return batch_index
 
 class LogisticRegression:
 
@@ -48,19 +48,22 @@ class LogisticRegression:
         return error, grads
         
         
-    def fit(self, X, Y, X_test=None, Y_test=None, verbose=False):
-        self._init_weights(len(X))
+    def fit(self, X, Y, train_index, test_index, verbose=False):
+        train_x, train_y = Get_Data(X, Y, train_index)
+        test_x, test_y = Get_Data(X, Y, test_index)
+        self._init_weights(len(X[0]))
         for t in range(self.max_iter):
-            if verbose and t % 100 == 0:
-                train_error, _ = self.loss(X, Y)
-                test_error, _ = self.loss(X_test, Y_test)
-                train_error = sum([math.pow(x, 2) for x in train_error])/float(len(X))
-                test_error = sum([math.pow(x, 2) for x in test_error])/float(len(X_test))
+            if verbose and t % 5 == 0:
+                train_error, _ = self.loss(train_x, train_y)
+                test_error, _ = self.loss(test_x, test_y)
+                train_error = sum([math.pow(x, 2) for x in train_error])/float(len(train_index))
+                test_error = sum([math.pow(x, 2) for x in test_error])/float(len(test_index))
                 print "Training Data MSE: {}".format(train_error)
                 print "Testinng Data MSE: {}".format(test_error)
                 with open("loss.32.log", "a") as log_file:
                     log_file.write("{},{},{}\n".format(t,train_error, test_error))
-            batch_X, batch_Y = get_batch(X, Y, self.batch_size)
+            batch_index = get_batch_index(train_index, self.batch_size)
+            batch_X, batch_Y = Get_Data(X, Y, batch_index)
             error, grads = self.loss(batch_X, batch_Y)
             weight_delta = [e*g for e, g in zip(error,grads)]
             weight_update = [0 for _ in range(len(batch_X[0]))]
@@ -70,10 +73,10 @@ class LogisticRegression:
                 self.weights[i] += self.learning_rate*(- self.reg_strength*self.weights[i] + weight_update[i]/float(len(batch_X)))
 
         if verbose:
-            train_error, _ = self.loss(X, Y)
-            test_error, _ = self.loss(X_test, Y_test)
-            train_error = sum([math.pow(x, 2) for x in train_error])/float(len(X))
-            test_error = sum([math.pow(x, 2) for x in test_error])/float(len(X_test))
+            train_error, _ = self.loss(train_x, train_y)
+            test_error, _ = self.loss(test_x, test_y)
+            train_error = sum([math.pow(x, 2) for x in train_error])/float(len(train_index))
+            test_error = sum([math.pow(x, 2) for x in test_error])/float(len(test_index))
             print "Training Data MSE: {}".format(train_error)
             print "Testinng Data MSE: {}".format(test_error)
             with open("loss.32.log", "a") as log_file:
@@ -91,4 +94,9 @@ class LogisticRegression:
             
     
     def _init_weights(self, num_weights):
-        self.weights = [random.random()*math.sqrt(2.0/num_weights) for _ in range(num_weights)]            
+        self.weights = [random.random()*1e-3 for _ in range(num_weights)]
+    
+    def save_weights(self, filename):
+        with open(filename, "w") as weight_file:
+            for weight in self.weights:
+                weight_file.write("{}\n".format(weight))          
