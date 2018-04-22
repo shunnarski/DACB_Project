@@ -118,7 +118,7 @@ def average_PSSM_Weights(matrix):
         vals = []
         for row in range(matrix_length):
             val = matrix[row][column]
-            vals.append(val)
+            vals.append(int(val))
         avg = sum(vals) / len(vals)
         avg = avg / float(100)
         average_weights.append(avg)
