@@ -58,10 +58,14 @@ def Extract_Features(pssm_dir):
                         print file[:-5]
                     feature_file.write("{},{},{}\n".format(label, i_str, j_str))
 
-def Get_PSSM(blast_output):    
-    pssm = []
-    pssm.append(["-1" for _ in range(20)])
-    pssm.append(["-1" for _ in range(20)])
+
+def Get_PSSM(blast_output):
+
+    lin_reg_matrix = []
+
+    gnb_matrix = []
+    gnb_matrix.append(["-1" for _ in range(20)])
+    gnb_matrix.append(["-1" for _ in range(20)])
     
     with open(blast_output, 'r') as pssm_file:
         start_read = False
@@ -76,12 +80,17 @@ def Get_PSSM(blast_output):
                 start_read = True
             if start_read:
                 scores = line[2:22]
-                pssm.append(scores)
-    
-        pssm.append(["-1" for _ in range(20)])
-        pssm.append(["-1" for _ in range(20)])
+                gnb_matrix.append(scores)
+
+                lin_reg_vals = line[22:42]
+                lin_reg_matrix.append(lin_reg_vals)
+
+        gnb_matrix.append(["-1" for _ in range(20)])
+        gnb_matrix.append(["-1" for _ in range(20)])
+
+        lin_reg_matrix = average_PSSM_Weights(lin_reg_matrix)
         
-    return pssm
+    return gnb_matrix, lin_reg_matrix
 
 def Get_Contact_Points(rr_filename):
     contact_points = set()
@@ -97,7 +106,24 @@ def Get_Contact_Points(rr_filename):
             j = int(line[1]) - 1
             contact_points.add((i,j))
     return contact_points, sequence_length
-            
+
+def average_PSSM_Weights(matrix):
+
+    average_weights = []
+
+    row_length = len(matrix[0])
+    matrix_length = len(matrix)
+
+    for column in range(row_length):
+        vals = []
+        for row in range(matrix_length):
+            val = matrix[row][column]
+            vals.append(val)
+        avg = sum(vals) / len(vals)
+        avg = avg / float(100)
+        average_weights.append(avg)
+
+    return average_weights
 
 if __name__ == "__main__":
     blast_dir = "../../blast/bin/blastpgp"
