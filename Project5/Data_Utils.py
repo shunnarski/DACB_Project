@@ -33,5 +33,6 @@ def Get_Features(X):
     _, lr1 = Blast_Utils.Get_PSSM(seq1 + ".pssm")
     _, lr2 = Blast_Utils.Get_PSSM(seq2 + ".pssm")
     lr1.extend(lr2)
+    lr1.append(1)
     return lr1
 

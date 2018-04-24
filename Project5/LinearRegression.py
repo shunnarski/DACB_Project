@@ -30,16 +30,18 @@ class LinearRegression:
         
         
     def fit(self, X, Y, test_X, test_Y, verbose=False, log_filename="test.log"):
-        self._init_weights(40)
+        self._init_weights(41)
         acc_train_error = 0
         acc_test_error = 0
+        velocity = [0 for _ in range(41)]
+        weight_delta = [0 for _ in range(41)]
         for t in range(self.max_iter):
-            if verbose and t % 100 == 0 and t != 0:
+            if verbose and t % 100 == 0 and t > 0:
                 avg_train_error = acc_train_error/(self.batch_size*100.0)
                 avg_test_error = acc_test_error/(self.batch_size*100.0)
                 acc_train_error = 0
                 acc_test_error = 0
-                print "Train Error: {}\tTest Error: {}\n".format(avg_train_error, avg_test_error)
+                print "Train Error: {}\tTest Error: {}".format(avg_train_error, avg_test_error)
                 with open(log_filename, "a") as log_file:
                     log_file.write("{},{},{}\n".format(t,avg_train_error,avg_test_error))
 
@@ -54,18 +56,22 @@ class LinearRegression:
 
             
             for i in range(len(batch_X[0])):
-                weight_update = 0
+                weight_delta[i] = 0
                 for j in range(len(batch_X)):
-                    weight_update += batch_X[j][i]*error[j]
-                weight_update /= float(len(batch_X))
-                self.weights[i] += 2*self.learning_rate*(weight_update)
+                    weight_delta[i] += batch_X[j][i]*error[j]
+                weight_delta[i] /= float(len(batch_X))
+
+                velocity[i] = 0.9*velocity[i] + 2*self.learning_rate*weight_delta[i]
+                self.weights[i] += velocity[i]
 
         if verbose:
             avg_train_error = acc_train_error/(self.batch_size*100.0)
             avg_test_error = acc_test_error/(self.batch_size*100.0)
-            print "Train Error: {}\tTest Error: {}\n".format(avg_train_error, avg_test_error)
+            print "Train Error: {}\tTest Error: {}".format(avg_train_error, avg_test_error)
             with open(log_filename, "a") as log_file:
-                 log_file.write("{},{},{}\n".format(t,avg_train_error,avg_test_error))                 
+                log_file.write("{},{},{}\n".format(t,avg_train_error,avg_test_error))
+
+                 
             
 
     def predict(self, X):
