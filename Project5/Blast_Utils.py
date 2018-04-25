@@ -63,10 +63,11 @@ def Extract_Features(pssm_dir):
 def Get_PSSM(blast_output):
 
     lin_reg_matrix = []
-
-    gnb_matrix = []
-    gnb_matrix.append(["-1" for _ in range(20)])
-    gnb_matrix.append(["-1" for _ in range(20)])
+    
+    all_gnb_features = []
+    amino_acid_features = []
+    amino_acid_features.extend([-1.0 for _ in range(20)])
+    amino_acid_features.extend([-1.0 for _ in range(20)])
     
     with open(blast_output, 'r') as pssm_file:
         start_read = False
@@ -80,23 +81,19 @@ def Get_PSSM(blast_output):
             if line[0] == "1":
                 start_read = True
             if start_read:
-                scores = line[2:22]
-                gnb_matrix.append(scores)
+                scores = [float(x) for x in line[2:22]]
+                amino_acid_features.extend(scores)
+                if len(amino_acid_features) == 100:
+                    all_gnb_features.append(amino_acid_features)
+                    amino_acid_features = amino_acid_features[20:]
 
                 lin_reg_vals = line[22:42]
                 lin_reg_matrix.append(lin_reg_vals)
-
-        gnb_matrix.append(["-1" for _ in range(20)])
-        gnb_matrix.append(["-1" for _ in range(20)])
-
-        gnb_feature_vectors = []
-        all_gnb_features = []
-        for i in range(2, len(gnb_matrix) - 2):
-            features = []
-            for j in range(i - 2, i + 3):
-                features.extend([float(x) for x in gnb_matrix[j]])
-            gnb_feature_vectors.append(features)
-        all_gnb_features.append(gnb_feature_vectors)
+        amino_acid_features.extend([-1.0 for _ in range(20)])
+        all_gnb_features.append(amino_acid_features)
+        amino_acid_features = amino_acid_features[20:]
+        amino_acid_features.extend([-1.0 for _ in range(20)])
+        all_gnb_features.append(amino_acid_features)
 
         lin_reg_matrix = average_PSSM_Weights(lin_reg_matrix)
         
