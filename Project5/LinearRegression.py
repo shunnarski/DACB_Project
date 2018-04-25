@@ -30,15 +30,15 @@ class LinearRegression:
         
         
     def fit(self, X, Y, test_X, test_Y, verbose=False, log_filename="test.log"):
-        self._init_weights(41)
+        self._init_weights(45)
         acc_train_error = 0
         acc_test_error = 0
-        velocity = [0 for _ in range(41)]
-        weight_delta = [0 for _ in range(41)]
+        velocity = [0 for _ in range(45)]
+        weight_delta = [0 for _ in range(45)]
         for t in range(self.max_iter):
-            if verbose and t % 100 == 0 and t > 0:
-                avg_train_error = acc_train_error/(self.batch_size*100.0)
-                avg_test_error = acc_test_error/(self.batch_size*100.0)
+            if verbose and t % 50 == 0 and t > 0:
+                avg_train_error = acc_train_error/(self.batch_size*50.0)
+                avg_test_error = acc_test_error/(self.batch_size*50.0)
                 acc_train_error = 0
                 acc_test_error = 0
                 print "Train Error: {}\tTest Error: {}".format(avg_train_error, avg_test_error)
@@ -46,13 +46,13 @@ class LinearRegression:
                     log_file.write("{},{},{}\n".format(t,avg_train_error,avg_test_error))
 
             batch_X, batch_Y = get_batch(X, Y, self.batch_size)
-            test_batch_X, test_batch_Y = get_batch(test_X, test_Y, self.batch_size)
+            #test_batch_X, test_batch_Y = get_batch(test_X, test_Y, self.batch_size)
 
             error = self.loss(batch_X, batch_Y)
-            test_error = self.loss(test_batch_X, test_batch_Y)
+            #test_error = self.loss(test_batch_X, test_batch_Y)
 
             acc_train_error += sum([e**2 for e in error])
-            acc_test_error += sum([e**2 for e in test_error])
+            #acc_test_error += sum([e**2 for e in test_error])
 
             
             for i in range(len(batch_X[0])):
@@ -60,13 +60,14 @@ class LinearRegression:
                 for j in range(len(batch_X)):
                     weight_delta[i] += batch_X[j][i]*error[j]
                 weight_delta[i] /= float(len(batch_X))
+                v_prev = velocity[i]
+                velocity[i] = 0.9*velocity[i] + self.learning_rate*weight_delta[i]
+                self.weights[i] += 0.9*v_prev + (1+0.9)*velocity[i]
 
-                velocity[i] = 0.9*velocity[i] + 2*self.learning_rate*weight_delta[i]
-                self.weights[i] += velocity[i]
 
         if verbose:
-            avg_train_error = acc_train_error/(self.batch_size*100.0)
-            avg_test_error = acc_test_error/(self.batch_size*100.0)
+            avg_train_error = acc_train_error/(self.batch_size*25.0)
+            avg_test_error = acc_test_error/(self.batch_size*25.0)
             print "Train Error: {}\tTest Error: {}".format(avg_train_error, avg_test_error)
             with open(log_filename, "a") as log_file:
                 log_file.write("{},{},{}\n".format(t,avg_train_error,avg_test_error))

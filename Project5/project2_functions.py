@@ -10,7 +10,7 @@ def read_file(filename):
     :return: A list of sequences of amino acids and their results in the files
     """
     Data = []
-    print "reading file {} ...".format(filename)
+    #print "reading file {} ...".format(filename)
     with open(filename, "r") as data_file:
         for line in data_file:
             line = line.strip()
@@ -65,7 +65,6 @@ def extract_features(sequences, labels=None):
     :return: return the extracted features from the sequences
     """
 
-    print "Extracting features ..."
     feature_dict = {}
     feature_vectors = []
     new_labels = []
@@ -125,7 +124,7 @@ def traverse_tree(decision_tree, test_data_acids):
     :return: A list of the labels generated from traversing the decision tree
     """
 
-    print "Traversing tree ..."
+    # print "Traversing tree ..."
 
     list_of_test_instance_labels = []
     test_instance_labels = []

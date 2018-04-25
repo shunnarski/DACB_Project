@@ -2,6 +2,7 @@ import os
 import random
 import sys
 import Blast_Utils
+import External_Feature_Extraction as efe
 
 def Load_Dataset(data_filename):
     X = []
@@ -32,7 +33,11 @@ def Get_Features(X):
     seq1, seq2 = X
     _, lr1 = Blast_Utils.Get_PSSM(seq1 + ".pssm")
     _, lr2 = Blast_Utils.Get_PSSM(seq2 + ".pssm")
+    #dt1 = efe.Extract_Decision_Tree_Features(seq1 + ".fasta")
+    #dt2 = efe.Extract_Decision_Tree_Features(seq2 + ".fasta")
     lr1.extend(lr2)
+    #lr1.extend(dt1)
+    #lr1.extend(dt2)
     lr1.append(1)
     return lr1
 
