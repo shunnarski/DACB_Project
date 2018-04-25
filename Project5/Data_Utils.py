@@ -1,42 +1,38 @@
 import os
 import random
 import sys
+import Blast_Utils
 
-def Load_Data(feature_dir, num_read=10):
+def Load_Dataset(data_filename):
     X = []
-    y = []
-    num_sequences = 0
-    for file in os.listdir(feature_dir):
-        if ".features" not in file:
-            continue
-        if num_sequences > num_read:
-            break
-            #pass
-        with open(feature_dir + file, "r") as feature_file:
-            for line in feature_file:
-                line = line.strip().split(",")
-                label = float(line[0])
-                features = [int(x) for x in line[1:]]
-                features.append(1)
-                y.append(label)
-                X.append(features)
-        num_sequences += 1
-    return X, y
+    Y = []
+    with open(data_filename, "r") as data_file:
+        for line in data_file:
+            line = line.strip().split(",")
+            X.append((line[0], line[1]))
+            Y.append(float(line[2]))
+    return X, Y
 
-def Split_Data(num_instances, test_split=.25):
-    train_indices = []
-    test_indices = []
-    num_test = int(num_instances*.25)
-    indices = [i for i in range(num_instances)]
-    random.shuffle(indices)
-    test_indices = indices[:num_test]
-    train_indices = indices[num_test:]
-    return train_indices, test_indices
+def Split_Data(X, Y, test_split=.25):
+    train_x = []
+    test_x = []
+    train_y = []
+    test_y = []
+    test_indices = random.sample(range(len(X)), int(len(X)*test_split))
+    for i in range(len(X)):
+        if i in test_indices:
+            test_x.append(X[i])
+            test_y.append(Y[i])
+        else:
+            train_x.append(X[i])
+            train_y.append(Y[i])
+    return train_x, test_x, train_y, test_y
 
-def Get_Data(X, Y, indices):
-    x = []
-    y = []
-    for i in indices:
-        x.append(X[i])
-        y.append(Y[i])
-    return x, y
+def Get_Features(X):
+    seq1, seq2 = X
+    _, lr1 = Blast_Utils.Get_PSSM(seq1 + ".pssm")
+    _, lr2 = Blast_Utils.Get_PSSM(seq2 + ".pssm")
+    lr1.extend(lr2)
+    lr1.append(1)
+    return lr1
+
