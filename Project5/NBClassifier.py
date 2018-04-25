@@ -135,7 +135,7 @@ class NBClassifier:
         :return: Predicted Labels
         """
 
-        print "Making predictions..."
+        #print "Making predictions..."
 
         # for some reason X is a list with one element which is a list of the test data which has another list. List-ception.
         sequences = X

@@ -30,11 +30,11 @@ class LinearRegression:
         
         
     def fit(self, X, Y, test_X, test_Y, verbose=False, log_filename="test.log"):
-        self._init_weights(45)
+        self._init_weights(51)
         acc_train_error = 0
         acc_test_error = 0
-        velocity = [0 for _ in range(45)]
-        weight_delta = [0 for _ in range(45)]
+        velocity = [0 for _ in range(51)]
+        weight_delta = [0 for _ in range(51)]
         for t in range(self.max_iter):
             if verbose and t % 50 == 0 and t > 0:
                 avg_train_error = acc_train_error/(self.batch_size*50.0)
@@ -66,8 +66,8 @@ class LinearRegression:
 
 
         if verbose:
-            avg_train_error = acc_train_error/(self.batch_size*25.0)
-            avg_test_error = acc_test_error/(self.batch_size*25.0)
+            avg_train_error = acc_train_error/(self.batch_size*50.0)
+            avg_test_error = acc_test_error/(self.batch_size*50.0)
             print "Train Error: {}\tTest Error: {}".format(avg_train_error, avg_test_error)
             with open(log_filename, "a") as log_file:
                 log_file.write("{},{},{}\n".format(t,avg_train_error,avg_test_error))
