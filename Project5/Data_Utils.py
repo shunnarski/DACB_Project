@@ -40,4 +40,3 @@ def Get_Data(X, Y, indices):
         x.append(X[i])
         y.append(Y[i])
     return x, y
-                

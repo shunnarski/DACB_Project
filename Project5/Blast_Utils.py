@@ -2,6 +2,7 @@ import subprocess
 import os
 import sys
 from multiprocessing import Pool
+import External_Feature_Extraction as efe
 
 def Blast_Directory_Parallel(fasta_dir, blast_dir, nr_dir):
     p = Pool(4)
@@ -34,29 +35,32 @@ def Extract_Features(pssm_dir):
         if os.path.exists(pssm_dir + file[:-5] + ".features"):
             continue
         feature_vectors = []
-        pssm = Get_PSSM(pssm_dir + file)
-        contact_points, sequence_length = Get_Contact_Points(pssm_dir + file[:-5] + ".rr") 
+        gnb_pssm, lin_reg_vals = Get_PSSM(pssm_dir + file)
+        feature_vectors.append(lin_reg_vals)
+        decision_tree_features = efe.Extract_Decision_Tree_Features("fasta")
+        feature_vectors.append(decision_tree_features)
+        #contact_points, sequence_length = Get_Contact_Points(pssm_dir + file[:-5] + ".rr")
         with open(pssm_dir + file[:-5] + ".features", "w") as feature_file:
-            
-            for i in range(sequence_length-6):
-                for j in range(i + 5, sequence_length):
-                    if (i,j) in contact_points:
-                        label = 1
-		    else:
-                        label = 0
-                    index_i = i + 2
-                    index_j = j + 2
-                    i_features = pssm[index_i-2:index_i+3]
-                    j_features = pssm[index_j-2:index_j+3]
-                    i_flat = [item for sublist in i_features for item in sublist]
-                    j_flat = [item for sublist in j_features for item in sublist]
-                    i_str = ",".join(i_flat)
-                    j_str = ",".join(j_flat)
-	            if len(i_str) == 0 or len(j_str) == 0:
-                        import pdb
-                        pdb.set_trace()
-                        print file[:-5]
-                    feature_file.write("{},{},{}\n".format(label, i_str, j_str))
+            pass
+            # for i in range(sequence_length-6):
+            #     for j in range(i + 5, sequence_length):
+            #         if (i,j) in contact_points:
+            #             label = 1
+            #         else:
+            #             label = 0
+            #         index_i = i + 2
+            #         index_j = j + 2
+            #         i_features = gnb_pssm[index_i-2:index_i+3]
+            #         j_features = gnb_pssm[index_j-2:index_j+3]
+            #         i_flat = [item for sublist in i_features for item in sublist]
+            #         j_flat = [item for sublist in j_features for item in sublist]
+            #         i_str = ",".join(i_flat)
+            #         j_str = ",".join(j_flat)
+            #         if len(i_str) == 0 or len(j_str) == 0:
+            #             import pdb
+            #             pdb.set_trace()
+            #             print file[:-5]
+            #         feature_file.write("{},{},{}\n".format(label, i_str, j_str))
 
 
 def Get_PSSM(blast_output):
@@ -91,6 +95,9 @@ def Get_PSSM(blast_output):
         lin_reg_matrix = average_PSSM_Weights(lin_reg_matrix)
         
     return gnb_matrix, lin_reg_matrix
+
+def Get_Features():
+    pass
 
 def Get_Contact_Points(rr_filename):
     contact_points = set()
