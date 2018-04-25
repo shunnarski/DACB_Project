@@ -19,7 +19,7 @@ def Extract_Decision_Tree_Features(fasta_file):
         else:
             buried_count += 1
 
-    result_length = len(result_sequence)
+    result_length = len(result_sequence[0])
     exposed_percent = float(exposed_count) / result_length
     buried_percent = float(buried_count) / result_length
 

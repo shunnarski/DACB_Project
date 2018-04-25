@@ -95,9 +95,8 @@ def Get_PSSM(blast_output):
         amino_acid_features.extend([-1.0 for _ in range(20)])
         all_gnb_features.append(amino_acid_features)
 
-        lin_reg_matrix = average_PSSM_Weights(lin_reg_matrix)
-        
-    return all_gnb_features, lin_reg_matrix
+        lin_reg_matrix = average_PSSM_Weights(lin_reg_matrix)    
+    return [all_gnb_features], lin_reg_matrix
 
 
 
