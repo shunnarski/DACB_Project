@@ -29,5 +29,28 @@ def Extract_Decision_Tree_Features(fasta_file):
 
 
 
-def Extract_GNB_Features(pssm_features):
-    pass
+def Extract_GNB_Features(prediction):
+    pred = prediction[0]
+    prediction_length = len(pred)
+
+    h_count = 0
+    e_count = 0
+    c_count = 0
+
+    for result in pred:
+        if result == 'H':
+            h_count += 1
+        elif result == 'C':
+            c_count += 1
+        elif result == 'E':
+            e_count += 1
+
+    h_prob = float(h_count) / prediction_length
+    e_prob = float(e_count) / prediction_length
+    c_prob = float(c_count) / prediction_length
+
+    gnb_features = [h_prob, e_prob, c_prob]
+
+    return gnb_features
+
+

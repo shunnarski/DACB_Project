@@ -145,7 +145,8 @@ class NBClassifier:
         for sequence in sequences:
             seq_predictions = []
             for feature_vector in sequence:
-
+                # import pdb
+                # pdb.set_trace()
                 helix_gaussian = self.calc_gaussian(m_and_v['H'], feature_vector)
                 strand_gaussian = self.calc_gaussian(m_and_v['E'], feature_vector)
                 coil_gaussian = self.calc_gaussian(m_and_v['C'], feature_vector)

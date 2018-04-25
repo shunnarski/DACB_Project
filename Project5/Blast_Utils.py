@@ -37,9 +37,6 @@ def Extract_Features(pssm_dir):
         feature_vectors = []
         gnb_pssm, lin_reg_vals = Get_PSSM(pssm_dir + file)
         feature_vectors.append(lin_reg_vals)
-        decision_tree_features = efe.Extract_Decision_Tree_Features("fasta")
-        feature_vectors.append(decision_tree_features)
-        #contact_points, sequence_length = Get_Contact_Points(pssm_dir + file[:-5] + ".rr")
         with open(pssm_dir + file[:-5] + ".features", "w") as feature_file:
             pass
             # for i in range(sequence_length-6):
@@ -92,12 +89,20 @@ def Get_PSSM(blast_output):
         gnb_matrix.append(["-1" for _ in range(20)])
         gnb_matrix.append(["-1" for _ in range(20)])
 
+        gnb_feature_vectors = []
+        all_gnb_features = []
+        for i in range(2, len(gnb_matrix) - 2):
+            features = []
+            for j in range(i - 2, i + 3):
+                features.extend([float(x) for x in gnb_matrix[j]])
+            gnb_feature_vectors.append(features)
+        all_gnb_features.append(gnb_feature_vectors)
+
         lin_reg_matrix = average_PSSM_Weights(lin_reg_matrix)
         
-    return gnb_matrix, lin_reg_matrix
+    return all_gnb_features, lin_reg_matrix
 
-def Get_Features():
-    pass
+
 
 def Get_Contact_Points(rr_filename):
     contact_points = set()

@@ -1,68 +1,36 @@
+import Blast_Utils
+import External_Feature_Extraction as efe
+from NBClassifier import NBClassifier
+import project3_functions
 
 
+def Get_Features(X):
 
+    clf = NBClassifier()
 
+    seq1, seq2 = X
+    gnb1_pssm, lr1 = Blast_Utils.Get_PSSM(seq1 + ".pssm")
+    # gnb2_pssm, lr2 = Blast_Utils.Get_PSSM(seq2 + ".pssm")
 
+    means_and_variances, priors = project3_functions.load_model("800_sequence_model.mdl")
+    gnb_predictions1 = clf.predict(gnb1_pssm, means_and_variances, priors)
+    # gnb_predictions2 = clf.predict(gnb2_pssm, means_and_variances, priors)
 
+    gnb1_features = efe.Extract_GNB_Features(gnb_predictions1)
 
+    print gnb1_features
+    # gnb2_features = efe.Extract_GNB_Features(gnb_predictions2)
 
-def Get_PSSM(blast_output):
-    lin_reg_matrix = []
+    # dt1 = efe.Extract_Decision_Tree_Features(seq1 + ".fasta")
+    # dt2 = efe.Extract_Decision_Tree_Features(seq2 + ".fasta")
+    # lr1.extend(lr2)
+    # #lr1.extend(dt1)
+    # #lr1.extend(dt2)
+    # lr1.append(1)
+    # return lr1
 
-    gnb_matrix = []
-    gnb_matrix.append(["-1" for _ in range(20)])
-    gnb_matrix.append(["-1" for _ in range(20)])
+x = "test", ""
 
-    with open(blast_output, 'r') as pssm_file:
-        start_read = False
-        for line in pssm_file:
-            if "Lambda" in line:
-                break
-            line = line.strip()
-            if line == "":
-                continue
-            line = line.split()
-            if line[0] == "1":
-                start_read = True
-            if start_read:
-                scores = line[2:22]
-                gnb_matrix.append(scores)
-
-                lin_reg_vals = line[22:42]
-                lin_reg_matrix.append(lin_reg_vals)
-
-        gnb_matrix.append(["-1" for _ in range(20)])
-        gnb_matrix.append(["-1" for _ in range(20)])
-
-        lin_reg_matrix = average_PSSM_Weights(lin_reg_matrix)
-
-    return gnb_matrix, lin_reg_matrix
-
-def average_PSSM_Weights(matrix):
-
-    average_weights = []
-
-    row_length = len(matrix[0])
-    matrix_length = len(matrix)
-
-    for column in range(row_length):
-        vals = []
-        for row in range(matrix_length):
-            val = matrix[row][column]
-            vals.append(int(val))
-        avg = sum(vals) / len(vals)
-        avg = avg / float(100)
-        average_weights.append(avg)
-
-    return average_weights
-
-
-gnb, lin_reg = Get_PSSM("test.pssm")
-
-print lin_reg
-
-print
-
-print gnb
+Get_Features(x)
 
 
