@@ -4,7 +4,7 @@ import sys
 import Blast_Utils
 import External_Feature_Extraction as efe
 import project3_functions
-import NBClassifier
+from NBClassifier import NBClassifier
 
 def Load_Dataset(data_filename):
     X = []
