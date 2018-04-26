@@ -28,6 +28,13 @@ class LinearRegression:
         error = [actual - predicted for actual, predicted in zip(Y, predictions)]
         return error
         
+    def score(self, X, Y):
+        error = []
+        for x, y in zip(X, Y):
+            features = Get_Features(x)
+            prediction = self.predict([features])[0]
+            error.append((prediction - y)**2)
+        return sum(error)/float(len(error)) 
         
     def fit(self, X, Y, test_X, test_Y, verbose=False, log_filename="test.log"):
         self._init_weights(51)
@@ -87,6 +94,13 @@ class LinearRegression:
     
     def _init_weights(self, num_weights):
         self.weights = [random.random()*1e-3 for _ in range(num_weights)]
+
+    def load_weights(self, filename):
+        self.weights = []
+        with open(filename, "r") as weight_file:
+            for weight in weight_file:
+                weight = float(weight.strip())
+                self.weights.append(weight)
     
     def save_weights(self, filename):
         with open(filename, "w") as weight_file:
