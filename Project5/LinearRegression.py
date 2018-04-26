@@ -27,7 +27,7 @@ class LinearRegression:
         predictions = self.predict(X)
         error = [actual - predicted for actual, predicted in zip(Y, predictions)]
         return error
-        
+
     def score(self, X, Y):
         error = []
         for x, y in zip(X, Y):
@@ -36,50 +36,39 @@ class LinearRegression:
             error.append((prediction - y)**2)
         return sum(error)/float(len(error)) 
         
+        
     def fit(self, X, Y, test_X, test_Y, verbose=False, log_filename="test.log"):
         self._init_weights(51)
-        acc_train_error = 0
-        acc_test_error = 0
         velocity = [0 for _ in range(51)]
         weight_delta = [0 for _ in range(51)]
+        prev_error = 0
+        convergence_count = 0
         for t in range(self.max_iter):
-            if verbose and t % 50 == 0 and t > 0:
-                avg_train_error = acc_train_error/(self.batch_size*50.0)
-                avg_test_error = acc_test_error/(self.batch_size*50.0)
-                acc_train_error = 0
-                acc_test_error = 0
-                print "Train Error: {}\tTest Error: {}".format(avg_train_error, avg_test_error)
-                with open(log_filename, "a") as log_file:
-                    log_file.write("{},{},{}\n".format(t,avg_train_error,avg_test_error))
-
+       
             batch_X, batch_Y = get_batch(X, Y, self.batch_size)
-            #test_batch_X, test_batch_Y = get_batch(test_X, test_Y, self.batch_size)
 
             error = self.loss(batch_X, batch_Y)
-            #test_error = self.loss(test_batch_X, test_batch_Y)
+            square_error = sum([e**2 for e in error])/float(len(error))
+            print "Batch Error: {}".format(square_error)
+            with open(log_filename, "a") as log_file:
+                log_file.write("{},{}\n".format(t,square_error))
+            if abs(square_error - prev_error) < self.convergence_threshold:
+                convergence_count += 1
+            else:
+                convergence_count = 0
+            if convergence_count == 2:
+                break
+            prev_error = square_error            
 
-            acc_train_error += sum([e**2 for e in error])
-            #acc_test_error += sum([e**2 for e in test_error])
-
-            
             for i in range(len(batch_X[0])):
                 weight_delta[i] = 0
                 for j in range(len(batch_X)):
                     weight_delta[i] += batch_X[j][i]*error[j]
                 weight_delta[i] /= float(len(batch_X))
                 v_prev = velocity[i]
-                velocity[i] = 0.9*velocity[i] + self.learning_rate*weight_delta[i]
-                self.weights[i] += 0.9*v_prev + (1+0.9)*velocity[i]
-
-
-        if verbose:
-            avg_train_error = acc_train_error/(self.batch_size*50.0)
-            avg_test_error = acc_test_error/(self.batch_size*50.0)
-            print "Train Error: {}\tTest Error: {}".format(avg_train_error, avg_test_error)
-            with open(log_filename, "a") as log_file:
-                log_file.write("{},{},{}\n".format(t,avg_train_error,avg_test_error))
-
-                 
+                velocity[i] = 0.5*velocity[i] + self.learning_rate*weight_delta[i]
+                self.weights[i] += 0.5*v_prev + (1+0.5)*velocity[i]
+ 
             
 
     def predict(self, X):
