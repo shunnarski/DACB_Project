@@ -10,8 +10,6 @@ if __name__ == "__main__":
 
     features = Get_Features((seq1_filename, seq2_filename))
     
-    import pdb
-    pdb.set_trace()
     clf =  LinearRegression()
-    clf.load_weights("test.mdl")
+    clf.load_weights("lr.mdl")
     print(clf.predict([features]))
